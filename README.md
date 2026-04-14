@@ -84,7 +84,7 @@ Send alerts via WhatsApp integration
 
 ### Non-Functional Requirements
 
-Response time under 2 seconds for core operations
+Response time as function specific
 
 Offline-first architecture with high reliability
 
