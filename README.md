@@ -1,44 +1,78 @@
- ## Last-Mile Scanner PWA
- 
-### Overview
+# LastMile Scanner PWA - Base Setup
 
-Last-Mile Scanner PWA is an offline-first Progressive Web Application designed to optimize last-mile delivery operations in supply chain environments.
+A clean, minimal, and modular Progressive Web Application for last-mile delivery operations. This is the foundation where 10+ developers can independently work on separate modules.
+
+## 📋 Project Overview
+
+**Last-Mile Scanner PWA** is an offline-first Progressive Web Application designed to optimize last-mile delivery operations in supply chain environments.
 
 The application enables delivery agents to perform parcel scanning, geo-tracking, warehouse validation, and data capture even in low or no connectivity conditions. It ensures operational continuity by storing critical data locally and synchronizing with backend systems when connectivity is restored.
 
-### Problem Statement
+## 🎯 Status: Foundation Complete ✅
 
-In modern supply chain and delivery systems, the following challenges are common:
+- ✅ App runs successfully
+- ✅ Modular architecture ready
+- ✅ All 10 modules with placeholders
+- ✅ Full routing configured
+- ✅ PWA setup complete
+- ✅ Backend API ready
+- ✅ No heavy logic (clean foundation)
 
-Lack of structured code ownership and maintainability
+## 🏗️ Project Structure
 
-imited real-time tracking and accountability
+```
+lastmile-scanner-pwa/
+├── frontend/                 # React + Vite PWA
+│   ├── src/
+│   │   ├── core/            # Routes & theme
+│   │   ├── pages/           # Home, Dashboard
+│   │   ├── components/      # Navbar, Sidebar
+│   │   ├── modules/         # 10 independent modules
+│   │   │   ├── pwa/         # Service Worker setup
+│   │   │   ├── ui/          # UI Components
+│   │   │   ├── storage/     # IndexedDB wrapper
+│   │   │   ├── sync/        # Offline queue & sync
+│   │   │   ├── scanner/     # QR/Barcode scanner
+│   │   │   ├── camera/      # Image capture
+│   │   │   ├── gps/         # Location tracking
+│   │   │   ├── geofence/    # Boundary detection
+│   │   │   ├── ml/          # ML API integration
+│   │   │   └── integrations/ # OTP, WhatsApp, UPI
+│   │   ├── services/        # API calls
+│   │   ├── hooks/           # Custom hooks
+│   │   └── utils/           # Helpers
+│   ├── public/              # PWA assets (manifest, sw)
+│   └── package.json
+│
+├── backend/                  # Flask API
+│   ├── app/
+│   │   ├── __init__.py       # App factory
+│   │   └── routes/           # Modular routes
+│   ├── app.py               # Entry point
+│   └── requirements.txt
+│
+└── README.md                # This file
+```
 
-Strong dependency on internet connectivity
+## 🎨 Module Details
 
-Fragmented and non-centralized operational data
+Each module has 3 files:
+- **index.js** - Exports
+- **ModulePage.jsx** - Placeholder UI
+- **moduleService.js** - Placeholder functions with TODO comments
 
-Inefficient delivery verification and warehouse monitoring
+### 10 Modules
 
-These challenges result in reduced efficiency, poor visibility, and operational inconsistencies.
-
-### Solution
-
-Last-Mile Scanner PWA introduces an offline-first system that:
-
-Operates independently of network connectivity
-
-Enables high-speed QR and barcode scanning
-
-Tracks delivery agents using GPS with fallback handling
-
-Integrates with warehouse cameras for monitoring
-
-Uses machine learning for parcel and worker validation
-
-Synchronizes data automatically when connectivity is available
-
-Centralizes operational data for improved control and insights
+1. **PWA** 📱 - Service Worker & PWA setup
+2. **UI** 🎨 - UI Components & theming
+3. **Storage** 💾 - IndexedDB wrapper
+4. **Sync** 🔄 - Offline queue & sync
+5. **Scanner** 📦 - QR/Barcode scanning
+6. **Camera** 📷 - Image capture
+7. **GPS** 📍 - Location tracking
+8. **Geofence** 🗺️ - Boundary detection
+9. **ML** 🤖 - ML API integration
+10. **Integrations** 🔌 - OTP, WhatsApp, UPI
 
 ### Core Features
 QR and Barcode scanning (offline capable)
@@ -58,6 +92,98 @@ Centralized data aggregation and processing
 WhatsApp integration for alerts and notifications
 
 Low-latency operations optimized for field usage
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 16+ (frontend)
+- Python 3.8+ (backend)
+
+### Setup Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Opens at `http://localhost:3000`
+
+### Setup Backend
+```bash
+cd backend
+python -m venv venv
+# On Windows: venv\Scripts\activate
+# On Mac/Linux: source venv/bin/activate
+pip install -r requirements.txt
+python app.py
+```
+Runs at `http://localhost:5000`
+
+## 🧩 Module Development Rules
+
+### ✅ DO
+- Work **only** inside your module folder
+- Create placeholder functions with `// TODO` comments
+- Keep services minimal and focused
+- Use module's `index.js` for exports
+- Test your module page independently
+- Check dashboard at `/dashboard` for all modules
+
+### ❌ DON'T
+- Implement complex business logic yet
+- Create dependencies between modules
+- Import from other modules
+- Add heavy libraries
+- Share state across modules
+
+## 🔌 API Integration
+
+Frontend calls backend via `src/services/api.js`:
+
+```javascript
+import { healthCheck } from './services/api.js';
+const status = await healthCheck();
+```
+
+Available endpoints:
+- `GET /api/health` - Server status
+- `GET /api/test/` - Test endpoint
+- `POST /api/test/ping` - Ping test
+
+## 📊 Dashboard
+
+Visit `http://localhost:3000/dashboard` to see all 10 modules with quick navigation.
+
+## 📦 Technology Stack
+
+**Frontend:**
+- React 18 + Vite 4
+- React Router v6
+- CSS (no frameworks)
+- Service Workers & PWA APIs
+
+**Backend:**
+- Flask 2.3
+- Flask-CORS
+- Python 3.8+
+
+## 🔄 Development Workflow
+
+1. **Phase 1 (Complete)** ✅ - Foundation setup
+2. **Phase 2** - Individual module development
+3. **Phase 3** - Module integration
+4. **Phase 4** - Testing & optimization
+5. **Phase 5** - Deployment
+
+## 📋 File Structure Legend
+
+```
+modules/module-name/
+├── index.js              # export { default as ModulePage } from './ModulePage'
+├── ModulePage.jsx        # React component (shows "Module Loaded")
+└── moduleService.js      # Service functions (all TODO placeholders)
+```
+
+Each module is **completely independent** - no cross-module imports!
 
 ### System Requirements
 ### Functional Requirements

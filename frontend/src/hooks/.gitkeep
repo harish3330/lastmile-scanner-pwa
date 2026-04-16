@@ -1,0 +1,4 @@
+// Global hooks can be added here later
+// Example: useAuth, useFetch, useLocalStorage, etc.
+
+export {};
