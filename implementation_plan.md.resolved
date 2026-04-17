@@ -1,0 +1,114 @@
+# Member 2 — UI + Admin Dashboard + Version Control
+
+Build the main React frontend for the **Last-Mile Scanner PWA**, covering all navigation pages and an admin dashboard, plus version control documentation.
+
+## Proposed Changes
+
+### React App Setup (Vite)
+
+#### [NEW] Project root at `d:\Frontend UI\parcel-tracker\`
+
+Initialize a Vite + React app. Install:
+- `react-router-dom` — client-side routing
+- `recharts` — charts for admin dashboard
+- `lucide-react` — icon set
+
+---
+
+### Design System
+
+#### [NEW] `src/index.css`
+Global CSS with:
+- Dark mode palette (deep navy, electric blue, accent green)
+- Typography (Inter font from Google Fonts)
+- CSS custom properties (tokens)
+- Smooth animations / transitions
+
+#### [NEW] `src/components/Layout.jsx`
+Sidebar with links to all 4 main pages + dedicated Admin section.
+
+---
+
+### Main Pages (`src/pages/`)
+
+#### [NEW] `ScanPage.jsx`
+- QR/barcode scan UI with animated scan zone
+- Recent scans list fed from mock data
+- Status indicators (success / pending / failed)
+
+#### [NEW] `DeliveryPage.jsx`
+- Active deliveries list with agent name, status badge, ETA
+- Mark delivered / in-transit actions (UI only)
+- Search and filter bar
+
+#### [NEW] `WarehousePage.jsx`
+- Warehouse capacity card with live-style progress bar
+- Parcel count display
+- Camera feed placeholder (ready for ML integration)
+
+#### [NEW] `PaymentPage.jsx`
+- Payment form: amount, mode (UPI/Cash/Card)
+- Recent transactions table
+- Mismatch alert display for cash difference
+
+---
+
+### Admin Dashboard (`src/pages/admin/`)
+
+#### [NEW] `AdminLayout.jsx`
+Dedicated admin sidebar with accent styling.
+
+#### [NEW] `DeliveryLogs.jsx`
+- Table of all delivery events (parcel ID, agent, time, status)
+- Filter by status / date
+- `recharts` BarChart summary
+
+#### [NEW] `LocationLogs.jsx`
+- Table of GPS location captures (agent, lat, lng, timestamp)
+- Last-known location highlighted
+
+#### [NEW] `PaymentStatus.jsx`
+- Table of payment records (order ID, amount, mode, status)
+- `recharts` PieChart for payment mode breakdown
+- Mismatch rows highlighted in red
+
+---
+
+### Version Control Documentation
+
+#### [NEW] `d:\Frontend UI\README.md`
+Project overview, setup instructions, team structure.
+
+#### [NEW] `d:\Frontend UI\BRANCHING_STRATEGY.md`
+Branching strategy:
+- `main` → stable production
+- `develop` → integration branch
+- `feature/<name>` → per-member features
+- `hotfix/<name>` → urgent production fixes
+
+#### [NEW] `d:\Frontend UI\.gitignore`
+Standard Node.js / React gitignore.
+
+---
+
+## Verification Plan
+
+### Automated Dev Server Test
+```
+cd "d:\Frontend UI\parcel-tracker"
+npm run dev
+```
+Confirm the app starts without errors on `http://localhost:5173`.
+
+### Manual Navigation Test
+1. Open `http://localhost:5173` in browser
+2. Click **Scan** in sidebar → Scan page loads with animated scan zone
+3. Click **Delivery** → Delivery page loads with list
+4. Click **Warehouse** → Warehouse page loads with capacity bar
+5. Click **Payment** → Payment form visible
+6. Click **Admin → Delivery Logs** → Table with mock data renders
+7. Click **Admin → Location Logs** → GPS table renders
+8. Click **Admin → Payment Status** → Table + PieChart renders
+
+### Browser Recording
+A browser subagent will navigate the live app and record a walkthrough video.
