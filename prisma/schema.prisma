@@ -33,6 +33,7 @@ model Agent {
   locations     Location[]
   deliveries    Delivery[]
   payments      Payment[]
+  geofenceAlerts GeofenceAlert[]
 
   @@index([status])
 }
@@ -115,4 +116,40 @@ model SyncQueue {
 
   @@index([status, agentId])
   @@index([agentId, createdAt])
+}
+
+// ISSUE #7 (Geofencing) - Geo-zones for boundary detection
+model GeoZone {
+  id              String    @id @default(cuid())
+  name            String
+  latitude        Float
+  longitude       Float
+  radius          Float     // meters
+  alertThreshold  Float?    // optional: distance in meters to trigger pre-alert
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  alerts          GeofenceAlert[]
+
+  @@index([latitude, longitude])
+}
+
+// ISSUE #7 (Geofencing) - Geofence alerts/events
+model GeofenceAlert {
+  id        String    @id @default(cuid())
+  agentId   String
+  zoneId    String
+  status    String    // "entered" | "exited"
+  distance  Float     // meters from zone boundary
+  latitude  Float
+  longitude Float
+  createdAt DateTime  @default(now())
+
+  agent     Agent     @relation(fields: [agentId], references: [id])
+  zone      GeoZone   @relation(fields: [zoneId], references: [id])
+
+  @@index([agentId, status])
+  @@index([zoneId, status])
+  @@index([createdAt])
 }
