@@ -1,16 +1,73 @@
-# React + Vite
+# Smart Parcel Tracking & Delivery System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> **Member 2 Deliverable** — UI + Admin Dashboard + Version Control
 
-Currently, two official plugins are available:
+A modern, offline-capable Progressive Web Application for last-mile delivery operations and multi-agent administration.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Quick Start
 
-## React Compiler
+```bash
+npm install
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Open [http://localhost:3000](http://localhost:3000)
 
-## Expanding the ESLint configuration
+## 📱 Pages & Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | Login | Authentication view |
+| `/delivery-dashboard`| Agent Dashboard | Unified mobile-first agent app (Scan, Delivery, Proof, etc) |
+| `/admin/dashboard` | Admin Dashboard | Unified admin control center with tab-switchers |
+| `/scan` | Scan (Legacy) | QR/Barcode scanner with offline-first tracking |
+| `/delivery` | Delivery (Legacy) | Delivery management with status tracking |
+| `/warehouse` | Warehouse | Zone capacity, camera feeds & ML detection |
+| `/payments` | Payment | Cash collection & mismatch detection |
+
+## 🏗️ Tech Stack
+
+- **Next.js 15** (Pages Router) — Server-side rendering & optimized routing
+- **TypeScript** — Strict type safety aligning with `TEAM-ARCHITECTURE.md`
+- **Recharts** — Dynamic interactive data tracking and visualization
+- **Lucide-React** — Modern SVG icon library
+- **Prisma** — Database ORM (Prepared for backend integration)
+
+## 👥 Team Branching
+
+See `BRANCHING_STRATEGY.md` for full details.
+
+```text
+main ← feature/member-2-ui-admin-dashboard
+     ← feature/issue-1-pwa-infrastructure
+     ← feature/issue-4-scanner-module
+     ...
+```
+
+## 📁 Project Structure
+
+```text
+parcel-tracker/
+├── components/          # Reusable shared UI
+│   ├── delivery/        # Scan & Delivery panels
+│   ├── LocationLogs.tsx # Admin map and logs
+│   ├── PaymentStatus.tsx# Admin cash tracking
+│   ├── Navbar.tsx       # Top navigation
+│   └── Sidebar.tsx      # App navigation
+├── lib/types/           # Shared strict TypeScript interfaces
+│   └── events.ts        # Central event bus interfaces
+├── pages/               # Next.js Pages Routing
+│   ├── admin/           # Admin section
+│   │   └── dashboard.tsx
+│   ├── delivery-dashboard.tsx 
+│   ├── scan.tsx
+│   ├── delivery.tsx
+│   ├── warehouse.tsx
+│   ├── payments.tsx
+│   ├── login.tsx
+│   └── _app.tsx         # Global layout provider
+├── prisma/
+│   └── schema.prisma    # Database definitions
+└── styles/
+    └── globals.css      # Core Design Tokens
+```
