@@ -48,17 +48,27 @@ export interface PaymentResponse {
   status: 'success' | 'failed'
 }
 
+export interface Parcel {
+  id: string
+  class: string
+  confidence: number
+  bbox: [number, number, number, number] // [x1, y1, x2, y2] (0-1 normalized)
+}
+
 export interface DetectRequest {
-  image: string
-  confidence?: number
+  imageBase64: string // Base64 encoded image
+  agentId: string
+  timestamp: number
+  location?: { lat: number; lng: number }
+  minConfidence?: number // Optional: confidence threshold (default 0.5)
 }
 
 export interface DetectResponse {
-  detections: Array<{
-    label: string
-    confidence: number
-    bbox: [number, number, number, number]
-  }>
+  parcelCount: number
+  confidence: number // Average confidence of detections
+  detections: Parcel[]
+  inferenceTime: number // ML inference time in milliseconds
+  timestamp: number
 }
 
 export interface SyncRequest {
