@@ -2,3 +2,6 @@
 export type EventPayload = any;
 export type ApiResponse = any;
 export type DbRecord = any;
+
+// Service Worker Types
+export * from './serviceWorker';
