@@ -48,17 +48,27 @@ export interface PaymentResponse {
   status: 'success' | 'failed'
 }
 
+export interface Parcel {
+  id: string
+  class: string
+  confidence: number
+  bbox: [number, number, number, number] // [x1, y1, x2, y2] (0-1 normalized)
+}
+
 export interface DetectRequest {
-  image: string
-  confidence?: number
+  imageBase64: string // Base64 encoded image
+  agentId: string
+  timestamp: number
+  location?: { lat: number; lng: number }
+  minConfidence?: number // Optional: confidence threshold (default 0.5)
 }
 
 export interface DetectResponse {
-  detections: Array<{
-    label: string
-    confidence: number
-    bbox: [number, number, number, number]
-  }>
+  parcelCount: number
+  confidence: number // Average confidence of detections
+  detections: Parcel[]
+  inferenceTime: number // ML inference time in milliseconds
+  timestamp: number
 }
 
 export interface SyncRequest {
@@ -69,6 +79,41 @@ export interface SyncResponse {
   synced: number
   failed: number
   status: 'success' | 'partial' | 'error'
+}
+
+// Geofence API
+export interface GeofenceCheckRequest {
+  agentId: string
+  latitude: number
+  longitude: number
+  timestamp: number
+}
+
+export interface GeofenceCheckResponse {
+  zoneId: string
+  zoneName: string
+  status: 'entered' | 'exited' | 'unknown'
+  distance: number
+  alert: boolean
+  timestamp: number
+}
+
+export interface GeofenceZone {
+  id: string
+  name: string
+  latitude: number
+  longitude: number
+  radius: number // meters
+  alertThreshold?: number // distance in meters to trigger alert
+}
+
+export interface GeofenceCheckResult {
+  zoneId: string
+  zoneName: string
+  status: 'entered' | 'exited'
+  distance: number
+  isInside: boolean
+  timestamp: number
 }
 
 export interface OTPRequest {

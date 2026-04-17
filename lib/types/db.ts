@@ -48,6 +48,28 @@ export interface Payment {
   id: string
   deliveryId: string
   amount: number
+}
+
+export interface GeoZone {
+  id: string
+  name: string
+  latitude: number
+  longitude: number
+  radius: number // meters
+  alertThreshold?: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface GeofenceAlert {
+  id: string
+  agentId: string
+  zoneId: string
+  status: 'entered' | 'exited'
+  distance: number
+  latitude: number
+  longitude: number
+  createdAt: Date
   method: string
   status: 'PENDING' | 'SUCCESS' | 'FAILED'
   transactionId?: string
