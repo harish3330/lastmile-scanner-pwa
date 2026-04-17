@@ -30,7 +30,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Agent, CashTransaction } from '@/lib/types/index';
-import { DeliveryEvent, LocationEvent, AppEvent } from '@/lib/types/events';
+import { DeliveryEvent, LocationEvent, PaymentEvent, AppEvent } from '@/lib/types/events';
 import { eventBus } from '@/lib/events/eventBus';
 
 import {
@@ -59,7 +59,7 @@ import {
 
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-const DELIVERY_LOGS: (Pick<DeliveryEvent, 'id' | 'parcelId' | 'agentId' | 'type' | 'timestamp'> & { agent: string, event: string, location: string, status: string })[] = [
+const DELIVERY_LOGS: (Pick<DeliveryEvent, 'id' | 'agentId' | 'type' | 'timestamp'> & { parcelId?: string, parcel?: string, time?: string, agent: string, event: string, location: string, status: string })[] = [
     { id: 'LOG-001', parcelId: 'PKG-001', agentId: 'AG-001', agent: 'Ravi Kumar', event: 'Delivered', time: '2026-04-15 07:02', location: 'MG Road, Blr', status: 'delivered' } as any,
     { id: 'LOG-002', parcelId: 'PKG-002', agentId: 'AG-002', agent: 'Priya Sharma', event: 'Dispatched', time: '2026-04-15 06:45', location: 'Depot, Blr', status: 'in-transit' } as any,
     { id: 'LOG-003', parcelId: 'PKG-003', agentId: 'AG-003', agent: 'Ankit Mehta', event: 'Pickup', time: '2026-04-15 06:30', location: 'Warehouse A', status: 'pending' } as any,
@@ -1211,8 +1211,8 @@ function AnalyticsSection() {
                     return {
                         ...a,
                         delivered: status === 'completed' ? a.delivered + 1 : a.delivered,
-                        failed: status === 'failed' ? a.failed + 1 : a.failed,
-                        pending: status === 'started' || status === 'in_progress' ? a.pending + 1 : a.pending - (status === 'completed' || status === 'failed' ? 1 : 0)
+                        failed: (status as any) === 'failed' ? a.failed + 1 : a.failed,
+                        pending: status === 'started' || status === 'in_progress' ? a.pending + 1 : a.pending - (status === 'completed' || (status as any) === 'failed' ? 1 : 0)
                     };
                 }
                 return a;
