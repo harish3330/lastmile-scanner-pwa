@@ -14,6 +14,8 @@
     "test:ci": "jest --ci",
     "type-check": "tsc --noEmit",
     "test:e2e": "playwright test",
+    "test:scanner": "jest lib/modules/scanner",
+    "test:scanner:watch": "jest lib/modules/scanner --watch",
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
@@ -21,8 +23,10 @@
   },
   "dependencies": {
     "@prisma/client": "^5.0.0",
+    "@tailwindcss/forms": "^0.5.0",
     "@tensorflow-models/coco-ssd": "^2.2.2",
     "@tensorflow/tfjs": "^4.10.0",
+    "autoprefixer": "^10.4.0",
     "axios": "^1.6.0",
     "bcryptjs": "^2.4.0",
     "browser-image-compression": "^2.0.0",
@@ -35,16 +39,13 @@
     "next-auth": "^4.24.0",
     "pino": "^8.17.0",
     "postcss": "^8.4.0",
+    "prisma": "^5.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwindcss": "^3.3.0",
-    "typescript": "^5.0.0",
     "uuid": "^9.0.0",
     "winston": "^3.11.0",
-    "zustand": "^4.4.0",
-    "@tailwindcss/forms": "^0.5.0",
-    "autoprefixer": "^10.4.0",
-    "prisma": "^5.0.0"
+    "zustand": "^4.4.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.0",
