@@ -39,15 +39,7 @@ export interface PaymentEvent extends AppEvent {
 
 export interface GeofenceEvent extends AppEvent {
   type: 'GEOFENCE_EVENT'
-  payload: {
-    zoneId: string
-    zoneName: string
-    status: 'entered' | 'exited'
-    distance: number // meters from zone boundary
-    latitude: number
-    longitude: number
-    timestamp: number
-  }
+  payload: { zoneId: string; entering: boolean }
 }
 
 export interface ImageCaptureEvent extends AppEvent {
