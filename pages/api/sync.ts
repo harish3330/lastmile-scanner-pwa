@@ -37,9 +37,10 @@ export default async function handler(
     return res.status(200).json(result)
   } catch (error) {
     console.error('[API] POST /api/sync error:', error)
+    const eventsLength = Array.isArray(req.body?.events) ? req.body.events.length : 0
     return res.status(500).json({
       synced: 0,
-      failed: events?.length || 0,
+      failed: eventsLength,
       status: 'error'
     })
   }
