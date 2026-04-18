@@ -28,6 +28,18 @@ export interface PageProps {
   isProtected?: boolean
 }
 
+export interface CaptureResult {
+  id: string
+  imageBase64: string
+  mimeType: string
+  sizeBytes: number
+  metadata: {
+    latitude: number
+    longitude: number
+    timestamp: number
+  }
+}
+
 export interface DetectionResult {
   id: string
   agentId: string
