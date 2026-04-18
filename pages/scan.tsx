@@ -1,419 +1,197 @@
-/**
- * ISSUE #4 - Scan Page Component
- * React UI for camera-based QR/Barcode scanning
- * Follows marketplace theme: clean, light, user-friendly
- */
+import { useState, useEffect } from 'react';
+import { CheckCircle, Clock, XCircle, QrCode, RefreshCw, Zap } from 'lucide-react';
 
-import React, { useEffect, useRef, useState } from 'react'
-import { ScannerEngine, initScanner, stopScanner, ScanSyncHandler, initScanSyncHandler } from '@/lib/modules/scanner'
-import { ScanResult, CameraPermissionStatus } from '@/lib/modules/scanner/types'
+const MOCK_SCANS: { id: string, time: string, status: 'success' | 'pending' | 'failed', agent: string, location: string }[] = [
+    { id: 'PKG-001', time: '07:13:22', status: 'success', agent: 'Ravi K.', location: 'Gate A' },
+    { id: 'PKG-002', time: '07:10:05', status: 'success', agent: 'Priya S.', location: 'Dock 3' },
+    { id: 'PKG-003', time: '07:08:47', status: 'pending', agent: 'Ankit M.', location: 'Corridor B' },
+    { id: 'PKG-004', time: '07:05:31', status: 'failed', agent: 'Leena R.', location: 'Exit 2' },
+    { id: 'PKG-005', time: '07:02:14', status: 'success', agent: 'Ravi K.', location: 'Gate A' },
+    { id: 'PKG-006', time: '06:59:00', status: 'pending', agent: 'Sunita T.', location: 'Dock 1' },
+];
 
-interface ScanPageProps {
-  agentId: string
-  onScanComplete?: (result: ScanResult) => void
-  location?: { lat: number; lng: number }
+function StatusBadge({ status }: { status: 'success' | 'pending' | 'failed' }) {
+    const map = {
+        success: { cls: 'badge-success', icon: <CheckCircle size={11} />, label: 'Success' },
+        pending: { cls: 'badge-warning', icon: <Clock size={11} />, label: 'Pending' },
+        failed: { cls: 'badge-danger', icon: <XCircle size={11} />, label: 'Failed' },
+    };
+    const { cls, icon, label } = map[status];
+    return <span className={`badge ${cls}`}>{icon} {label}</span>;
 }
 
-interface ScanState {
-  isScanning: boolean
-  permissionStatus: CameraPermissionStatus | null
-  lastScan: ScanResult | null
-  error: string | null
-  frameCount: number
+export default function ScanPage() {
+    const [scanning, setScanning] = useState(false);
+    const [lastScanned, setLastScanned] = useState<string | null>(null);
+    const [scans, setScans] = useState(MOCK_SCANS);
+    const [linePos, setLinePos] = useState(10);
+
+    useEffect(() => {
+        if (!scanning) return;
+        const ids = ['PKG-007', 'PKG-008', 'PKG-009', 'PKG-010'];
+        let frame: number;
+        let start: number | null = null;
+        const animate = (ts: number) => {
+            if (!start) start = ts;
+            const elapsed = ((ts - start) / 3000) % 1;
+            setLinePos(elapsed < 0.5 ? 10 + elapsed * 2 * 75 : 85 - (elapsed - 0.5) * 2 * 75);
+            frame = requestAnimationFrame(animate);
+        };
+        frame = requestAnimationFrame(animate);
+
+        const timer = setTimeout(() => {
+            const newPkg = ids[Math.floor(Math.random() * ids.length)];
+            const newScan = {
+                id: newPkg,
+                time: new Date().toLocaleTimeString('en-GB'),
+                status: 'success' as const,
+                agent: 'Field Agent',
+                location: 'Gate A',
+            };
+            setScans(prev => [newScan, ...prev.slice(0, 8)]);
+            setLastScanned(newPkg);
+            setScanning(false);
+            cancelAnimationFrame(frame);
+        }, 3000);
+
+        return () => { clearTimeout(timer); cancelAnimationFrame(frame); };
+    }, [scanning]);
+
+    const successCount = scans.filter(s => s.status === 'success').length;
+    const pendingCount = scans.filter(s => s.status === 'pending').length;
+    const failedCount = scans.filter(s => s.status === 'failed').length;
+
+    return (
+        <div className="animate-in">
+            <div className="page-header">
+                <h1 className="page-title">Parcel Scanner</h1>
+                <p className="page-subtitle">QR & Barcode scanning — offline capable</p>
+            </div>
+
+            <div className="stats-grid">
+                {[
+                    { label: 'Successful', value: successCount, color: 'var(--green-primary)', bg: 'rgba(16,185,129,0.12)', icon: <CheckCircle size={20} /> },
+                    { label: 'Pending', value: pendingCount, color: 'var(--yellow-primary)', bg: 'rgba(245,158,11,0.12)', icon: <Clock size={20} /> },
+                    { label: 'Failed', value: failedCount, color: 'var(--red-primary)', bg: 'rgba(239,68,68,0.12)', icon: <XCircle size={20} /> },
+                    { label: 'Total Scans', value: scans.length, color: 'var(--blue-bright)', bg: 'rgba(59,130,246,0.12)', icon: <QrCode size={20} /> },
+                ].map(s => (
+                    <div className="stat-card" key={s.label}>
+                        <div className="stat-icon" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
+                        <div className="stat-label">{s.label}</div>
+                        <div className="stat-number" style={{ color: s.color }}>{s.value}</div>
+                    </div>
+                ))}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 24, alignItems: 'start' }}>
+                {/* Scan Zone */}
+                <div className="card" style={{ textAlign: 'center' }}>
+                    <div style={{
+                        position: 'relative',
+                        width: 220, height: 220,
+                        margin: '0 auto 20px',
+                        background: 'rgba(59,130,246,0.05)',
+                        border: '2px solid var(--border)',
+                        borderRadius: 12,
+                        overflow: 'hidden',
+                    }}>
+                        {/* Corner brackets */}
+                        {['topleft', 'topright', 'botleft', 'botright'].map(pos => (
+                            <div key={pos} style={{
+                                position: 'absolute',
+                                width: 28, height: 28,
+                                borderColor: scanning ? 'var(--blue-bright)' : 'var(--text-muted)',
+                                borderStyle: 'solid',
+                                borderWidth: 0,
+                                ...(pos.includes('top') ? { top: 12 } : { bottom: 12 }),
+                                ...(pos.includes('left') ? { left: 12 } : { right: 12 }),
+                                ...(pos.includes('top') && pos.includes('left') ? { borderTopWidth: 3, borderLeftWidth: 3 } : {}),
+                                ...(pos.includes('top') && pos.includes('right') ? { borderTopWidth: 3, borderRightWidth: 3 } : {}),
+                                ...(pos.includes('bot') && pos.includes('left') ? { borderBottomWidth: 3, borderLeftWidth: 3 } : {}),
+                                ...(pos.includes('bot') && pos.includes('right') ? { borderBottomWidth: 3, borderRightWidth: 3 } : {}),
+                                borderRadius: 4,
+                            }} />
+                        ))}
+
+                        {/* QR Icon */}
+                        <div style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            height: '100%', color: scanning ? 'var(--blue-bright)' : 'var(--text-muted)',
+                            opacity: scanning ? 0.3 : 0.5,
+                        }}>
+                            <QrCode size={72} />
+                        </div>
+
+                        {/* Scan line */}
+                        {scanning && (
+                            <div style={{
+                                position: 'absolute', left: 0, right: 0,
+                                top: `${linePos}%`,
+                                height: 2,
+                                background: 'linear-gradient(90deg, transparent, var(--blue-bright), transparent)',
+                                boxShadow: '0 0 8px var(--blue-primary)',
+                                transition: 'none',
+                            }} />
+                        )}
+                    </div>
+
+                    {lastScanned && !scanning && (
+                        <div style={{
+                            background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)',
+                            borderRadius: 8, padding: '10px 16px', marginBottom: 16, fontSize: 13,
+                            color: 'var(--green-primary)',
+                        }}>
+                            <CheckCircle size={14} style={{ display: 'inline', marginRight: 6 }} />
+                            Scanned: <strong>{lastScanned}</strong>
+                        </div>
+                    )}
+
+                    <button
+                        className={`btn ${scanning ? 'btn-danger' : 'btn-primary'}`}
+                        style={{ width: '100%', justifyContent: 'center' }}
+                        onClick={() => { setScanning(s => !s); if (scanning) setLastScanned(null); }}
+                    >
+                        {scanning ? <><RefreshCw size={16} className="spin" /> Scanning…</> : <><Zap size={16} /> Start Scan</>}
+                    </button>
+
+                    {scanning && (
+                        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 10 }}>
+                            Point camera at QR or barcode
+                        </p>
+                    )}
+                </div>
+
+                {/* Recent Scans */}
+                <div>
+                    <div className="section-title">Recent Scans</div>
+                    <div className="table-container">
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Package ID</th>
+                                    <th>Time</th>
+                                    <th>Agent</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {scans.map((scan, i) => (
+                                    <tr key={i}>
+                                        <td className="highlight">{scan.id}</td>
+                                        <td style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>{scan.time}</td>
+                                        <td>{scan.agent}</td>
+                                        <td>{scan.location}</td>
+                                        <td><StatusBadge status={scan.status} /></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <style>{`.spin { animation: spin 1s linear infinite; } @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+        </div>
+    );
 }
-
-const ScanPage: React.FC<ScanPageProps> = ({ agentId, onScanComplete, location }) => {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [state, setState] = useState<ScanState>({
-    isScanning: false,
-    permissionStatus: null,
-    lastScan: null,
-    error: null,
-    frameCount: 0
-  })
-  const scannerRef = useRef<ScannerEngine | null>(null)
-  const syncHandlerRef = useRef<ScanSyncHandler | null>(null)
-
-  // Initialize scanner and sync handler
-  useEffect(() => {
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.stop()
-      }
-    }
-  }, [])
-
-  // Start scanning
-  const handleStartScan = async () => {
-    try {
-      // Initialize sync handler
-      if (!syncHandlerRef.current) {
-        syncHandlerRef.current = initScanSyncHandler(agentId, location)
-      }
-
-      // Initialize scanner
-      scannerRef.current = await initScanner({ facingMode: 'environment' })
-
-      // Register scan callback
-      scannerRef.current.onScan(async (result: ScanResult) => {
-        setState(prev => ({
-          ...prev,
-          lastScan: result,
-          error: null
-        }))
-
-        // Handle scan via sync handler
-        if (syncHandlerRef.current) {
-          await syncHandlerRef.current.handleScanResult(result)
-        }
-
-        // Call parent callback
-        if (onScanComplete) {
-          onScanComplete(result)
-        }
-
-        // Show success toast (optional)
-        console.log(`✓ Scanned: ${result.value}`)
-      })
-
-      // Register error callback
-      scannerRef.current.onError((error: string) => {
-        setState(prev => ({
-          ...prev,
-          error
-        }))
-      })
-
-      // Update video element
-      if (videoRef.current && scannerRef.current.getVideoElement()) {
-        const videoElement = scannerRef.current.getVideoElement()
-        if (videoElement) {
-          videoRef.current.srcObject = (videoElement as any).srcObject
-        }
-      }
-
-      setState(prev => ({
-        ...prev,
-        isScanning: true,
-        error: null
-      }))
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Failed to start scanner'
-      setState(prev => ({
-        ...prev,
-        error: errorMsg,
-        isScanning: false
-      }))
-    }
-  }
-
-  // Stop scanning
-  const handleStopScan = () => {
-    stopScanner()
-    if (videoRef.current) {
-      videoRef.current.srcObject = null
-    }
-    setState(prev => ({
-      ...prev,
-      isScanning: false
-    }))
-  }
-
-  // Request camera permission
-  const handleRequestPermission = async () => {
-    try {
-      if (!scannerRef.current) {
-        scannerRef.current = new ScannerEngine()
-      }
-      const permission = await scannerRef.current.requestCameraPermission()
-      setState(prev => ({
-        ...prev,
-        permissionStatus: permission
-      }))
-
-      if (permission.state === 'granted') {
-        await handleStartScan()
-      }
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Failed to request permission'
-      setState(prev => ({
-        ...prev,
-        error: errorMsg
-      }))
-    }
-  }
-
-  // Update location
-  const handleUpdateLocation = (location: { lat: number; lng: number }) => {
-    if (syncHandlerRef.current) {
-      syncHandlerRef.current.setLocation(location)
-    }
-  }
-
-  return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>Scan QR Code or Barcode</h1>
-        <p style={styles.subtitle}>Align the code within the frame</p>
-      </div>
-
-      {/* Error Message */}
-      {state.error && (
-        <div style={styles.errorBox}>
-          <span style={styles.errorIcon}>⚠️</span>
-          <span style={styles.errorText}>{state.error}</span>
-        </div>
-      )}
-
-      {/* Permission Prompt */}
-      {!state.permissionStatus && (
-        <div style={styles.permissionBox}>
-          <p style={styles.permissionText}>Camera access required to scan codes</p>
-          <button style={styles.permissionButton} onClick={handleRequestPermission}>
-            Allow Camera Access
-          </button>
-        </div>
-      )}
-
-      {/* Camera Feed */}
-      {state.isScanning && (
-        <div style={styles.cameraContainer}>
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            style={styles.video}
-          />
-          <div style={styles.scannerOverlay}>
-            <div style={styles.scanFrame} />
-            <p style={styles.scannerText}>Scanning...</p>
-          </div>
-        </div>
-      )}
-
-      {/* Last Scan Result */}
-      {state.lastScan && (
-        <div style={styles.resultBox}>
-          <div style={styles.resultHeader}>
-            <span style={styles.resultIcon}>✓</span>
-            <span style={styles.resultTitle}>Scan Successful</span>
-          </div>
-          <div style={styles.resultDetails}>
-            <p style={styles.resultLabel}>Format: <span style={styles.resultValue}>{state.lastScan.format}</span></p>
-            <p style={styles.resultLabel}>Code: <span style={styles.resultValue}>{state.lastScan.value}</span></p>
-            <p style={styles.resultLabel}>Time: <span style={styles.resultValue}>{new Date(state.lastScan.timestamp).toLocaleTimeString()}</span></p>
-          </div>
-        </div>
-      )}
-
-      {/* Control Buttons */}
-      <div style={styles.buttonContainer}>
-        {!state.isScanning ? (
-          <button
-            style={{ ...styles.button, ...styles.primaryButton }}
-            onClick={handleStartScan}
-            disabled={!state.permissionStatus || state.permissionStatus.state !== 'granted'}
-          >
-            {state.permissionStatus?.state === 'granted' ? 'Start Scanning' : 'Request Permission'}
-          </button>
-        ) : (
-          <button
-            style={{ ...styles.button, ...styles.dangerButton }}
-            onClick={handleStopScan}
-          >
-            Stop Scanning
-          </button>
-        )}
-      </div>
-
-      {/* Debug Info */}
-      {state.isScanning && (
-        <div style={styles.debugBox}>
-          <p style={styles.debugText}>Frames processed: {state.frameCount}</p>
-        </div>
-      )}
-    </div>
-  )
-}
-
-const styles = {
-  container: {
-    maxWidth: '600px',
-    margin: '0 auto',
-    padding: '20px',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '8px',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-  } as React.CSSProperties,
-  header: {
-    textAlign: 'center' as const,
-    marginBottom: '24px',
-    paddingBottom: '16px',
-    borderBottom: '1px solid #e0e0e0'
-  },
-  title: {
-    fontSize: '24px',
-    fontWeight: '600',
-    color: '#1a73e8',
-    margin: '0 0 8px 0'
-  } as React.CSSProperties,
-  subtitle: {
-    fontSize: '14px',
-    color: '#666',
-    margin: '0'
-  } as React.CSSProperties,
-  errorBox: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '12px 16px',
-    marginBottom: '16px',
-    backgroundColor: '#ffebee',
-    borderLeft: '4px solid #d32f2f',
-    borderRadius: '4px'
-  } as React.CSSProperties,
-  errorIcon: {
-    marginRight: '12px',
-    fontSize: '18px'
-  },
-  errorText: {
-    fontSize: '14px',
-    color: '#c62828'
-  },
-  permissionBox: {
-    padding: '20px',
-    textAlign: 'center' as const,
-    backgroundColor: '#fff',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    marginBottom: '16px'
-  },
-  permissionText: {
-    fontSize: '14px',
-    color: '#666',
-    marginBottom: '12px'
-  } as React.CSSProperties,
-  permissionButton: {
-    padding: '10px 20px',
-    backgroundColor: '#1a73e8',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500'
-  } as React.CSSProperties,
-  cameraContainer: {
-    position: 'relative' as const,
-    width: '100%',
-    aspectRatio: '1 / 1',
-    marginBottom: '16px',
-    backgroundColor: '#000',
-    borderRadius: '4px',
-    overflow: 'hidden'
-  },
-  video: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover' as const
-  } as React.CSSProperties,
-  scannerOverlay: {
-    position: 'absolute' as const,
-    top: '0',
-    left: '0',
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)'
-  },
-  scanFrame: {
-    width: '200px',
-    height: '200px',
-    border: '3px solid #4CAF50',
-    borderRadius: '8px',
-    boxShadow: 'inset 0 0 20px rgba(76, 175, 80, 0.3)'
-  } as React.CSSProperties,
-  scannerText: {
-    color: '#fff',
-    fontSize: '14px',
-    marginTop: '12px',
-    fontWeight: '500'
-  } as React.CSSProperties,
-  resultBox: {
-    padding: '16px',
-    marginBottom: '16px',
-    backgroundColor: '#e8f5e9',
-    border: '1px solid #4CAF50',
-    borderRadius: '4px'
-  } as React.CSSProperties,
-  resultHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: '12px'
-  } as React.CSSProperties,
-  resultIcon: {
-    marginRight: '8px',
-    fontSize: '20px',
-    color: '#4CAF50'
-  },
-  resultTitle: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#2e7d32'
-  },
-  resultDetails: {
-    fontSize: '13px',
-    color: '#555'
-  } as React.CSSProperties,
-  resultLabel: {
-    margin: '4px 0',
-    fontWeight: '500'
-  } as React.CSSProperties,
-  resultValue: {
-    fontFamily: 'monospace',
-    color: '#1a73e8',
-    fontWeight: '600',
-    wordBreak: 'break-all' as const
-  } as React.CSSProperties,
-  buttonContainer: {
-    display: 'flex',
-    gap: '12px',
-    marginTop: '20px'
-  } as React.CSSProperties,
-  button: {
-    flex: 1,
-    padding: '12px 20px',
-    fontSize: '14px',
-    fontWeight: '600',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s'
-  } as React.CSSProperties,
-  primaryButton: {
-    backgroundColor: '#1a73e8',
-    color: '#fff'
-  } as React.CSSProperties,
-  dangerButton: {
-    backgroundColor: '#d32f2f',
-    color: '#fff'
-  } as React.CSSProperties,
-  debugBox: {
-    marginTop: '16px',
-    padding: '8px 12px',
-    backgroundColor: '#f5f5f5',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '12px',
-    color: '#666'
-  } as React.CSSProperties,
-  debugText: {
-    margin: '0'
-  } as React.CSSProperties
-}
-
-export default ScanPage

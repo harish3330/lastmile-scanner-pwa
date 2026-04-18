@@ -1,146 +1,124 @@
-// STUB - replace with real implementation later
+// ============================================================
+//  lib/types/api.ts — API CONTRACTS
+//  Mandated by TEAM-ARCHITECTURE.md
+// ============================================================
 
+import { AppEvent, Parcel } from './index'
+
+// SCAN API
 export interface ScanRequest {
-  agentId: string
   qrCode: string
+  agentId: string
   timestamp: number
   location?: { lat: number; lng: number }
 }
 
 export interface ScanResponse {
-  id: string
-  parcelId?: string
-  status: 'success' | 'error'
-  message: string
+  scanId: string
+  qrCode: string
+  decoded: any
+  timestamp: number
 }
 
+// LOCATION API
 export interface LocationRequest {
   agentId: string
-  lat: number
-  lng: number
+  latitude: number
+  longitude: number
   accuracy: number
+  timestamp: number
 }
 
 export interface LocationResponse {
-  id: string
-  status: 'logged' | 'error'
+  locationId: string
+  agentId: string
+  latitude: number
+  longitude: number
+  timestamp: number
 }
 
+// DELIVERY API
 export interface DeliveryRequest {
-  scanId: string
-  deliveryStatus: string
+  deliveryId: string
+  agentId: string
+  status: 'started' | 'in_progress' | 'completed'
+  imageProof?: string // base64
+  timestamp: number
 }
 
 export interface DeliveryResponse {
-  id: string
-  status: 'success' | 'error'
+  deliveryId: string
+  status: string
+  proofId?: string
+  timestamp: number
 }
 
+// PAYMENT API
 export interface PaymentRequest {
-  deliveryId: string
-  amount: number
-  method: string
+  transactionId: string
+  agentId: string
+  expectedAmount: number
+  collectedAmount: number
+  paymentMode: 'cash' | 'card' | 'upi'
+  timestamp: number
 }
 
 export interface PaymentResponse {
-  id: string
   transactionId: string
-  status: 'success' | 'failed'
+  status: 'matched' | 'mismatch'
+  discrepancy: number
+  timestamp: number
 }
 
-export interface Parcel {
-  id: string
-  class: string
-  confidence: number
-  bbox: [number, number, number, number] // [x1, y1, x2, y2] (0-1 normalized)
-}
-
+// DETECT API (ISSUE #9)
 export interface DetectRequest {
-  imageBase64: string // Base64 encoded image
+  imageBase64: string
   agentId: string
   timestamp: number
   location?: { lat: number; lng: number }
-  minConfidence?: number // Optional: confidence threshold (default 0.5)
 }
 
 export interface DetectResponse {
   parcelCount: number
-  confidence: number // Average confidence of detections
+  confidence: number
   detections: Parcel[]
-  inferenceTime: number // ML inference time in milliseconds
+  inferenceTime: number
   timestamp: number
 }
 
+// SYNC API
 export interface SyncRequest {
-  events: any[]
+  events: AppEvent[]
+  agentId: string
 }
 
 export interface SyncResponse {
   synced: number
   failed: number
-  status: 'success' | 'partial' | 'error'
+  errors: { eventId: string; error: string }[]
 }
 
-// Geofence API
-export interface GeofenceCheckRequest {
-  agentId: string
-  latitude: number
-  longitude: number
-  timestamp: number
-}
-
-export interface GeofenceCheckResponse {
-  zoneId: string
-  zoneName: string
-  status: 'entered' | 'exited' | 'unknown'
-  distance: number
-  alert: boolean
-  timestamp: number
-}
-
-export interface GeofenceZone {
-  id: string
-  name: string
-  latitude: number
-  longitude: number
-  radius: number // meters
-  alertThreshold?: number // distance in meters to trigger alert
-}
-
-export interface GeofenceCheckResult {
-  zoneId: string
-  zoneName: string
-  status: 'entered' | 'exited'
-  distance: number
-  isInside: boolean
-  timestamp: number
-}
-
+// OTP API
 export interface OTPRequest {
-  phone: string
+  phoneNumber: string
+  action: 'send' | 'verify'
+  otp?: string
 }
 
 export interface OTPResponse {
-  status: 'sent' | 'error'
+  phoneNumber: string
+  verified: boolean
   message: string
 }
 
-export interface VerifyOTPRequest {
-  phone: string
-  code: string
+// WHATSAPP API
+export interface WhatsappRequest {
+  phoneNumber: string
+  messageType: string
+  content: string
 }
 
-export interface VerifyOTPResponse {
-  status: 'verified' | 'invalid'
-  token?: string
-}
-
-export interface WhatsAppRequest {
-  message: string
-  recipient: string
-}
-
-export interface WhatsAppResponse {
-  status: 'sent' | 'error'
-  messageId?: string
+export interface WhatsappResponse {
+  messageId: string
+  status: 'sent' | 'failed'
 }
