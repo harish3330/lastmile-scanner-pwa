@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Global agents table
+model Agent {
+  id            String    @id
+  name          String
+  phoneNumber   String    @unique
+  status        String    @default("active") // "active" | "offline" | "inactive"
+  lastLatitude  Float?
+  lastLongitude Float?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  scans         Scan[]
+  locations     Location[]
+  deliveries    Delivery[]
+  payments      Payment[]
+  detections    Detection[]
+}
+
+// ISSUE #4 - Scans
+model Scan {
+  id        String    @id @default(cuid())
+  agentId   String
+  qrCode    String
+  barcode   String?
+  decodedData Json?
+  createdAt DateTime  @default(now())
+
+  agent     Agent     @relation(fields: [agentId], references: [id])
+  @@index([agentId])
+}
+
+// ISSUE #6 - Location tracking
+model Location {
+  id        String    @id @default(cuid())
+  agentId   String
+  latitude  Float
+  longitude Float
+  accuracy  Float?
+  createdAt DateTime  @default(now())
+
+  agent     Agent     @relation(fields: [agentId], references: [id])
+  @@index([agentId, createdAt])
+}
+
+// ISSUE #7 - Geo-fences
+model GeoZone {
+  id              String    @id @default(cuid())
+  name            String
+  latitude        Float
+  longitude       Float
+  radius          Float     // meters
+  alertThreshold  Float?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// ISSUE #7 - Geofence alerts
+model GeofenceAlert {
+  id        String    @id @default(cuid())
+  agentId   String
+  zoneId    String
+  status    String    // "entered" | "exited"
+  distance  Float
+  createdAt DateTime  @default(now())
+
+  agent     Agent     @relation(fields: [agentId], references: [id])
+}
+
+// ISSUE #5 - Image captures
+model ImageCapture {
+  id            String    @id @default(cuid())
+  agentId       String
+  imageHash     String    @unique
+  mimeType      String
+  sizeBytes     Int
+  latitude      Float?
+  longitude     Float?
+  createdAt     DateTime  @default(now())
+
+  agent         Agent     @relation(fields: [agentId], references: [id])
+}
+
+// ISSUE #9 - ML detections
+model Detection {
+  id            String    @id @default(cuid())
+  agentId       String
+  parcelCount   Int
+  confidence    Float
+  imageHash     String    @unique
+  detections    Json      // Array of Parcel objects
+  inferenceTime Int       // milliseconds
+  createdAt     DateTime  @default(now())
+
+  agent         Agent     @relation(fields: [agentId], references: [id])
+  @@index([agentId])
+}
+
+// ISSUE #2 - Deliveries
+model Delivery {
+  id            String    @id @default(cuid())
+  agentId       String
+  status        String    // "started" | "in_progress" | "completed"
+  imageProofId  String?   // References ImageCapture.id
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  agent         Agent     @relation(fields: [agentId], references: [id])
+}
+
+// ISSUE #8 - Payments + Cash management
+model Payment {
+  id              String    @id @default(cuid())
+  agentId         String
+  transactionId   String    @unique
+  expectedAmount  Float
+  collectedAmount Float
+  paymentMode     String    // "cash" | "card" | "upi"
+  status          String    // "matched" | "mismatch"
+  discrepancy     Float     @default(0)
+  createdAt       DateTime  @default(now())
+
+  agent           Agent     @relation(fields: [agentId], references: [id])
+  @@index([agentId])
+}
+
+// ISSUE #10 - OTP records
+model OTP {
+  id            String    @id @default(cuid())
+  phoneNumber   String
+  otpCode       String
+  verified      Boolean   @default(false)
+  expiresAt     DateTime
+  createdAt     DateTime  @default(now())
+}
+
+// ISSUE #10 - Messages
+model Message {
+  id            String    @id @default(cuid())
+  phoneNumber   String
+  messageType   String    // "notification" | "alert" | "confirmation"
+  content       String
+  status        String    // "sent" | "failed"
+  createdAt     DateTime  @default(now())
+}
+
+// ISSUE #3 - Sync queue
+model SyncQueue {
+  id            String    @id @default(cuid())
+  agentId       String
+  eventType     String
+  eventData     Json
+  syncState     String    @default("PENDING") // "PENDING" | "SYNCED" | "FAILED"
+  attempt       Int       @default(0)
+  error         String?
+  createdAt     DateTime  @default(now())
+  syncedAt      DateTime?
+
+  @@index([syncState, agentId])
+}

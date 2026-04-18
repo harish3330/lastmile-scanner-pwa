@@ -1,1 +1,0 @@
-export { SyncManager, syncManager } from './syncManager'

@@ -7,7 +7,6 @@ A modern, offline-capable Progressive Web Application for last-mile delivery ope
 ## 🚀 Quick Start
 
 ```bash
-cd parcel-tracker
 npm install
 npm run dev
 ```
@@ -18,7 +17,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 | Route | Page | Description |
 |-------|------|-------------|
-| `/` | Login | Mock authentication view |
+| `/` | Login | Authentication view |
 | `/delivery-dashboard`| Agent Dashboard | Unified mobile-first agent app (Scan, Delivery, Proof, etc) |
 | `/admin/dashboard` | Admin Dashboard | Unified admin control center with tab-switchers |
 | `/scan` | Scan (Legacy) | QR/Barcode scanner with offline-first tracking |
@@ -36,7 +35,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## 👥 Team Branching
 
-See [BRANCHING_STRATEGY.md](./BRANCHING_STRATEGY.md) for full details.
+See `BRANCHING_STRATEGY.md` for full details.
 
 ```text
 main ← feature/member-2-ui-admin-dashboard
