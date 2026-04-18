@@ -3,18 +3,6 @@
 //  TypeScript interfaces for image capture module
 // ============================================================
 
-export interface CaptureResult {
-  id: string
-  imageBase64: string
-  mimeType: string
-  sizeBytes: number
-  metadata: {
-    latitude: number
-    longitude: number
-    timestamp: number
-  }
-}
-
 export interface CompressionOptions {
   maxWidth?: number
   maxHeight?: number
