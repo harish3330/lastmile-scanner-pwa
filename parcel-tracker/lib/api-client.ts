@@ -4,9 +4,18 @@
 //  Endpoint constants from lib/types/api.js
 //  When Issue #8 backend is ready, replace mock delays
 // ============================================================
-import { API_ENDPOINTS } from './types/api.js';
+const API_ENDPOINTS = {
+  SCAN: '/api/scan',
+  LOCATION: '/api/location',
+  DELIVERY: '/api/delivery',
+  PAYMENT: '/api/payment',
+  SYNC: '/api/sync',
+  DETECT: '/api/detect',
+  OTP: '/api/otp',
+  WHATSAPP: '/api/whatsapp',
+};
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
 /**
  * Generic fetch wrapper with JSON body + error handling.

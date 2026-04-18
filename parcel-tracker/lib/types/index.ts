@@ -3,6 +3,8 @@
 //  Mandated by TEAM-ARCHITECTURE.md
 // ============================================================
 
+export * from './events'
+
 export interface Agent {
   id: string // UUID
   name: string

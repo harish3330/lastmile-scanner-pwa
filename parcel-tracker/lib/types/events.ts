@@ -15,6 +15,11 @@ export type EventType =
   | 'OTP_EVENT'
   | 'WHATSAPP_EVENT'
   | 'SYNC_EVENT'
+  | 'SYNC_QUEUED'
+  | 'SYNC_STARTED'
+  | 'SYNC_COMPLETED'
+  | 'SYNC_FAILED'
+  | 'SYNC_SUCCESS'
 
 // Sync states
 export type SyncState = 'PENDING' | 'SYNCED' | 'FAILED' | 'RETRYING'

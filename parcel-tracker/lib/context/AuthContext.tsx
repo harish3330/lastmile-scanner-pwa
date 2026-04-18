@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 
 type AuthSession = { email: string; role: string; name: string; __v?: string; };
 type LoginResult = { ok: boolean; error?: string; role?: string };
-type AuthContextType = { user: AuthSession | null; login: (email: string, password: string, role: string) => LoginResult; logout: () => void; };
+type AuthContextType = { user: AuthSession | null; loading: boolean; login: (email: string, password: string, role: string) => LoginResult; logout: () => void; };
 
 const MOCK_USERS = [
     { email: 'admin@gmail.com', password: 'admin123', role: 'admin', name: 'Admin User' },
@@ -23,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AuthSession | null>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         try {
@@ -37,6 +38,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
         } catch {
             localStorage.removeItem(SESSION_KEY);
+        } finally {
+            setLoading(false);
         }
     }, []);
 
@@ -59,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, logout }}>
             {children}
         </AuthContext.Provider>
     );
@@ -67,6 +70,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export const useAuth = (): AuthContextType => {
     const ctx = useContext(AuthContext);
-    if (!ctx) return { user: null, login: () => ({ ok: false, error: 'Not ready' }), logout: () => { } };
+    if (!ctx) return { user: null, loading: false, login: () => ({ ok: false, error: 'Not ready' }), logout: () => { } };
     return ctx;
 };

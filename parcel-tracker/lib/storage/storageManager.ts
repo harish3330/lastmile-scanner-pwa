@@ -1,5 +1,5 @@
 import { indexedDBStore } from './indexedDBStore'
-import type { SyncEvent, SyncQueueItem } from '../types/serviceWorker';
+import type { AppEvent, SyncEvent, SyncState } from '../types';
 
 export class StorageManager {
   async addEvent(event: any): Promise<void> {
@@ -20,6 +20,11 @@ export class StorageManager {
   async clearAll(): Promise<void> {
     console.log('[StorageManager] Clearing all events')
     await indexedDBStore.clearAll()
+  }
+
+  async updateEvent(event: any): Promise<void> {
+    console.log('[StorageManager] Updating event:', event.id)
+    await indexedDBStore.updateEvent(event)
   }
 
   // Sync Queue Methods
@@ -44,14 +49,14 @@ export class StorageManager {
     await indexedDBStore.clearAll()
   }
 
-  async getSyncState(eventId: string): Promise<'PENDING' | 'SYNCED' | 'FAILED' | null> {
+  async getSyncState(eventId: string): Promise<SyncState | null> {
     console.log('[StorageManager] Getting sync state for:', eventId)
     const events = await indexedDBStore.getEvents()
     const event = events.find(e => e.id === eventId)
     return event?.metadata?.syncState || null
   }
 
-  async updateSyncState(eventId: string, state: 'PENDING' | 'SYNCED' | 'FAILED'): Promise<void> {
+  async updateSyncState(eventId: string, state: SyncState): Promise<void> {
     console.log('[StorageManager] Updating sync state for', eventId, 'to', state)
     const events = await indexedDBStore.getEvents()
     const event = events.find(e => e.id === eventId)

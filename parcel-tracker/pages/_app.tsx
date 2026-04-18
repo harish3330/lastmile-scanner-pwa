@@ -2,8 +2,8 @@ import type { AppProps } from 'next/app';
 import { AuthProvider } from '@/lib/context/AuthContext';
 import { ThemeProvider } from '@/lib/context/ThemeContext';
 import Navbar from '@/components/Navbar';
-import '@/index.css';
-import '@/App.css';
+import '../index.css';
+import '../App.css';
 
 /** Shared layout shell (Navbar + page content) */
 function Layout({ children }: { children: React.ReactNode }) {
