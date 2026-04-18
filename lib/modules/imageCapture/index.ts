@@ -5,4 +5,5 @@
 
 export { ImageCaptureManager, imageCaptureManager } from './captureManager'
 export { ImageCompressor } from './compression'
-export type { CaptureResult, CompressionOptions, CaptureOptions, DeviceCamera } from './types'
+export type { CaptureResult } from '@/lib/types'
+export type { CompressionOptions, CaptureOptions, DeviceCamera } from './types'

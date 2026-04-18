@@ -5,7 +5,8 @@
 
 import { eventBus } from '@/lib/events/eventBus'
 import { ImageCaptureEvent } from '@/lib/types/events'
-import { CaptureOptions, CaptureResult, DeviceCamera } from './types'
+import type { CaptureResult } from '@/lib/types'
+import { CaptureOptions, DeviceCamera } from './types'
 import { ImageCompressor } from './compression'
 import { v4 as uuid } from 'uuid'
 
