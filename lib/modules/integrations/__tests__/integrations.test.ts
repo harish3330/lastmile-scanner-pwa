@@ -85,7 +85,7 @@ describe('OTPModule', () => {
       
       // First generate OTP
       const generateResponse = await otpModule.generateOTP(phoneNumber)
-      const correctOTP = generateResponse.otp
+      const correctOTP = generateResponse.otp!
       
       // Then verify it
       const verifyResponse = await otpModule.verifyOTP(phoneNumber, correctOTP)
@@ -99,7 +99,7 @@ describe('OTPModule', () => {
       
       await otpModule.generateOTP(phoneNumber)
       
-      const verifyResponse = await otpModule.verifyOTP(phoneNumber, '000000')
+      const verifyResponse = await otpModule.verifyOTP(phoneNumber, '000000' as string)
       
       expect(verifyResponse.verified).toBe(false)
       expect(verifyResponse.message).toContain('Invalid')
@@ -110,7 +110,7 @@ describe('OTPModule', () => {
       const emitSpy = jest.spyOn(eventBus, 'emit')
       
       const generateResponse = await otpModule.generateOTP(phoneNumber)
-      const correctOTP = generateResponse.otp
+      const correctOTP = generateResponse.otp!
       
       await otpModule.verifyOTP(phoneNumber, correctOTP)
       
@@ -133,7 +133,7 @@ describe('OTPModule', () => {
       // Simulate OTP expiration (after 5 minutes)
       jest.advanceTimersByTime(6 * 60 * 1000)
       
-      const verifyResponse = await otpModule.verifyOTP(phoneNumber, generateResponse.otp)
+      const verifyResponse = await otpModule.verifyOTP(phoneNumber, generateResponse.otp!)
       
       expect(verifyResponse.verified).toBe(false)
       expect(verifyResponse.message).toContain('expired')
@@ -155,10 +155,10 @@ describe('OTPModule', () => {
       const generateResponse = await otpModule.generateOTP(phoneNumber)
       
       // First attempt fails
-      await otpModule.verifyOTP(phoneNumber, 'wrong')
+      await otpModule.verifyOTP(phoneNumber, 'wrong' as string)
       
       // Second attempt succeeds
-      const secondAttempt = await otpModule.verifyOTP(phoneNumber, generateResponse.otp)
+      const secondAttempt = await otpModule.verifyOTP(phoneNumber, generateResponse.otp!)
       
       expect(secondAttempt.verified).toBe(true)
     })
@@ -220,7 +220,7 @@ describe('WhatsAppModule', () => {
 
     it('should support multiple message types', async () => {
       const recipient = '+919876543210'
-      const messageTypes = ['notification', 'alert', 'confirmation']
+      const messageTypes = ['notification', 'alert', 'confirmation'] as const
       
       for (const type of messageTypes) {
         const response = await whatsappModule.sendMessage(
@@ -255,7 +255,7 @@ describe('WhatsAppModule', () => {
       const message = 'Test message'
       
       const response = await whatsappModule.sendMessage(recipient, message)
-      const messageId = response.messageId
+      const messageId = response.messageId!
       
       const status = await whatsappModule.getMessageStatus(messageId)
       
@@ -268,7 +268,7 @@ describe('WhatsAppModule', () => {
       const message = 'Test message'
       
       const response = await whatsappModule.sendMessage(recipient, message)
-      const messageId = response.messageId
+      const messageId = response.messageId!
       
       const status = await whatsappModule.getMessageStatus(messageId)
       
@@ -373,7 +373,7 @@ describe('PaymentModule', () => {
       
       // Create order first
       const orderResponse = await paymentModule.createOrder(amount, deliveryId)
-      const orderId = orderResponse.orderId
+      const orderId = orderResponse.orderId!
       
       // Simulate payment
       const paymentId = 'pay_ABC123DEF456'
@@ -391,7 +391,7 @@ describe('PaymentModule', () => {
       
       // Create order first
       const orderResponse = await paymentModule.createOrder(amount, deliveryId)
-      const orderId = orderResponse.orderId
+      const orderId = orderResponse.orderId!
       
       const paymentId = 'pay_ABC123DEF456'
       const invalidSignature = 'invalid_hash'
@@ -408,7 +408,7 @@ describe('PaymentModule', () => {
       const emitSpy = jest.spyOn(eventBus, 'emit')
       
       const orderResponse = await paymentModule.createOrder(amount, deliveryId)
-      const orderId = orderResponse.orderId
+      const orderId = orderResponse.orderId!
       
       const paymentId = 'pay_ABC123DEF456'
       const signature = 'valid_signature_hash'
@@ -432,7 +432,7 @@ describe('PaymentModule', () => {
       const deliveryId = 'delivery-123'
       
       const orderResponse = await paymentModule.createOrder(amount, deliveryId)
-      const orderId = orderResponse.orderId
+      const orderId = orderResponse.orderId!
       
       // Simulate payment with different amount
       const paymentId = 'pay_ABC123DEF456'
@@ -452,7 +452,7 @@ describe('PaymentModule', () => {
       const upiId = 'user@okhdfcbank'
       
       const orderResponse = await paymentModule.createOrder(amount, deliveryId, 'upi')
-      const orderId = orderResponse.orderId
+      const orderId = orderResponse.orderId!
       
       const upiResponse = await paymentModule.processUPIPayment(orderId, upiId)
       
@@ -468,7 +468,7 @@ describe('PaymentModule', () => {
       const invalidUpiId = 'invalid-upi'
       
       const orderResponse = await paymentModule.createOrder(amount, deliveryId)
-      const orderId = orderResponse.orderId
+      const orderId = orderResponse.orderId!
       
       const upiResponse = await paymentModule.processUPIPayment(orderId, invalidUpiId)
       
@@ -483,7 +483,7 @@ describe('PaymentModule', () => {
       
       for (const upiId of validUpiIds) {
         const orderResponse = await paymentModule.createOrder(amount, deliveryId + '-' + upiId)
-        const orderId = orderResponse.orderId
+        const orderId = orderResponse.orderId!
         
         const upiResponse = await paymentModule.processUPIPayment(orderId, upiId)
         
@@ -498,7 +498,7 @@ describe('PaymentModule', () => {
       const emitSpy = jest.spyOn(eventBus, 'emit')
       
       const orderResponse = await paymentModule.createOrder(amount, deliveryId)
-      const orderId = orderResponse.orderId
+      const orderId = orderResponse.orderId!
       
       await paymentModule.processUPIPayment(orderId, upiId)
       
@@ -530,7 +530,7 @@ describe('PaymentModule', () => {
       const upiId = 'user123456789@okhdfcbank'
       
       const orderResponse = await paymentModule.createOrder(amount, deliveryId)
-      const orderId = orderResponse.orderId
+      const orderId = orderResponse.orderId!
       
       // Process UPI payment
       await paymentModule.processUPIPayment(orderId, upiId)
@@ -556,7 +556,7 @@ describe('PaymentModule', () => {
       const deliveryId = 'delivery-123'
       
       const orderResponse = await paymentModule.createOrder(amount, deliveryId)
-      const orderId = orderResponse.orderId
+      const orderId = orderResponse.orderId!
       
       const refundResponse = await paymentModule.processRefund(orderId, amount)
       
@@ -576,7 +576,7 @@ describe('PaymentModule', () => {
       const deliveryId = 'delivery-123'
       
       const orderResponse = await paymentModule.createOrder(amount, deliveryId)
-      const orderId = orderResponse.orderId
+      const orderId = orderResponse.orderId!
       
       const partialRefund = 250
       const response = await paymentModule.processRefund(orderId, partialRefund)
@@ -603,12 +603,12 @@ describe('PaymentModule', () => {
       const deliveryId = 'delivery-123'
       
       const response = await paymentModule.createOrder(amount, deliveryId)
-      const orderId = response.orderId
+      const orderId = response.orderId!
       
       const status = await paymentModule.getPaymentStatus(orderId)
       
       expect(status).toBeDefined()
-      expect(['pending', 'authorized', 'captured', 'failed', 'refunded']).toContain(status.paymentStatus)
+      expect(['pending', 'authorized', 'captured', 'failed', 'refunded']).toContain(status?.paymentStatus)
     })
   })
 
@@ -634,10 +634,10 @@ describe('PaymentModule', () => {
       
       const response = await paymentModule.createOrder(amount, deliveryId)
       
-      const auditLog = await paymentModule.getAuditLog(response.orderId)
+      const auditLog = await paymentModule.getAuditLog(response.orderId!)
       
       expect(auditLog).toBeDefined()
-      expect(auditLog.transactions).toBeDefined()
+      expect(auditLog?.transactions).toBeDefined()
     })
   })
 })
@@ -668,7 +668,7 @@ describe('Integration Tests - Complete OTP to Payment Flow', () => {
     expect(otpResponse.status).toBe('sent')
 
     // Step 2: Verify OTP
-    const verifyResponse = await otpModule.verifyOTP(phoneNumber, otpResponse.otp)
+    const verifyResponse = await otpModule.verifyOTP(phoneNumber, otpResponse.otp!)
     expect(verifyResponse.verified).toBe(true)
 
     // Step 3: Send WhatsApp confirmation
@@ -685,7 +685,7 @@ describe('Integration Tests - Complete OTP to Payment Flow', () => {
 
     // Step 5: Verify payment
     const paymentVerify = await paymentModule.verifyPayment(
-      orderResponse.orderId,
+      orderResponse.orderId!,
       'pay_XYZ789',
       'valid_signature'
     )
