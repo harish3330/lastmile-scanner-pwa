@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { paymentModule } from '@/lib/modules/integrations'
+import { integrationPaymentService } from '@/services/integrationPaymentService'
 
 interface VerifyPaymentRequest {
   orderId: string
@@ -94,10 +94,10 @@ export default async function handler(
       }
     }
 
-    // Verify payment
-    const result = await paymentModule.verifyPayment(orderId, paymentId, signature, paidAmount)
+    // Verify payment using service layer
+    const result = await integrationPaymentService.verifyPayment(orderId, paymentId, signature, paidAmount)
 
-    if (result.verified) {
+    if (result.status === 'verified') {
       return res.status(200).json({
         status: 'verified',
         message: 'Payment verified successfully',

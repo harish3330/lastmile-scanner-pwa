@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { otpModule } from '@/lib/modules/integrations'
+import { otpService } from '@/services/otpService'
 
 interface VerifyOTPResponse {
   status: 'verified' | 'invalid' | 'error'
@@ -63,10 +63,10 @@ export default async function handler(
       })
     }
 
-    // Verify OTP
-    const result = await otpModule.verifyOTP(phoneNumber, otpCode)
+    // Verify OTP using service layer
+    const result = await otpService.verifyOTP(phoneNumber, otpCode)
 
-    if (result.verified) {
+    if (result.status === 'verified') {
       return res.status(200).json({
         status: 'verified',
         message: result.message,

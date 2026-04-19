@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { otpModule } from '@/lib/modules/integrations'
+import { otpService } from '@/services/otpService'
 import type { OTPResponse } from '@/lib/modules/integrations/types'
 
 /**
@@ -44,8 +44,8 @@ export default async function handler(
       })
     }
 
-    // Generate OTP
-    const result = await otpModule.generateOTP(phoneNumber)
+    // Generate OTP using service layer
+    const result = await otpService.sendOTP(phoneNumber)
 
     if (result.status === 'sent') {
       return res.status(200).json({

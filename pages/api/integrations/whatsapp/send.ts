@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { whatsappModule } from '@/lib/modules/integrations'
+import { whatsappService } from '@/services/whatsappService'
 
 interface WhatsAppSendRequest {
   recipient: string
@@ -100,8 +100,8 @@ export default async function handler(
       }
     }
 
-    // Send message
-    const result = await whatsappModule.sendMessage(
+    // Send message using service layer
+    const result = await whatsappService.sendMessage(
       recipient,
       message,
       (messageType || 'notification') as 'notification' | 'alert' | 'confirmation',

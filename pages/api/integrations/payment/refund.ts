@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { paymentModule } from '@/lib/modules/integrations'
+import { integrationPaymentService } from '@/services/integrationPaymentService'
 
 interface RefundRequest {
   orderId: string
@@ -86,8 +86,8 @@ export default async function handler(
       })
     }
 
-    // Process refund
-    const result = await paymentModule.processRefund(orderId, refundAmount)
+    // Process refund using service layer
+    const result = await integrationPaymentService.processRefund(orderId, refundAmount, reason)
 
     if (result.status === 'success') {
       return res.status(200).json({

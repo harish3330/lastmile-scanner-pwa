@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { whatsappModule } from '@/lib/modules/integrations'
+import { whatsappService } from '@/services/whatsappService'
 
 interface WhatsAppStatusResponse {
   status: 'success' | 'error'
@@ -54,15 +54,15 @@ export default async function handler(
       })
     }
 
-    // Get message status
-    const result = await whatsappModule.getMessageStatus(messageId)
+    // Get message status using service layer
+    const result = await whatsappService.getMessageStatus(messageId)
 
-    if (result && result.messageId) {
+    if (result.status === 'success' && result.messageId) {
       return res.status(200).json({
         status: 'success',
         messageId: result.messageId,
         deliveryStatus: result.deliveryStatus,
-        readStatus: result.readStatus === 'read',
+        readStatus: result.readStatus,
       })
     } else {
       return res.status(404).json({

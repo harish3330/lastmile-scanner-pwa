@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { paymentModule } from '@/lib/modules/integrations'
+import { integrationPaymentService } from '@/services/integrationPaymentService'
 
 interface CreateOrderRequest {
   amount: number
@@ -107,10 +107,10 @@ export default async function handler(
       })
     }
 
-    // Create order
-    const result = await paymentModule.createOrder(amount, deliveryId, method, receipt, currency)
+    // Create order using service layer
+    const result = await integrationPaymentService.createOrder(amount, deliveryId, method, receipt, currency)
 
-    if (result.status === 'created') {
+    if (result.status === 'success') {
       return res.status(200).json({
         status: 'success',
         message: 'Order created successfully',
