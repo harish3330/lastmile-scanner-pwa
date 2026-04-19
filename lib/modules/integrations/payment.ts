@@ -25,7 +25,6 @@ import {
   PaymentStatus,
   PaymentHistory,
   PaymentAuditLog,
-  PaymentError,
   UPIPaymentRequest,
   UPIPaymentResponse
 } from './types'
@@ -124,11 +123,12 @@ export class PaymentModule {
       })
 
       // Emit PAYMENT_EVENT
+      const paymentMode = (method && ['cash', 'card', 'upi'].includes(method)) ? method as 'cash' | 'card' | 'upi' : 'card'
       this.emitPaymentEvent({
-        amount,
-        method: method || 'unspecified',
-        status: 'pending',
-        deliveryId,
+        expectedAmount: amount,
+        collectedAmount: 0,
+        paymentMode,
+        status: 'mismatch',
         transactionId: orderId,
         timestamp: Date.now()
       })
@@ -211,14 +211,14 @@ export class PaymentModule {
       })
 
       // Emit PAYMENT_EVENT for successful payment
+      const mode = (order.method && ['cash', 'card', 'upi'].includes(order.method)) ? order.method as 'cash' | 'card' | 'upi' : 'card'
       this.emitPaymentEvent({
-        amount: order.amount,
-        method: order.method,
-        status: 'success',
-        deliveryId: order.deliveryId,
+        expectedAmount: order.amount,
+        collectedAmount: order.amount,
+        paymentMode: mode,
+        status: 'matched',
         transactionId: paymentId,
-        timestamp: Date.now(),
-        verified: true
+        timestamp: Date.now()
       })
 
       console.log(`[PAYMENT] Payment verified for order ${orderId}`)
@@ -393,11 +393,12 @@ export class PaymentModule {
       this.orderStorage.set(orderId, order)
 
       // Emit payment event
+      const upiStatus = (upiResponse.status === 'success') ? 'matched' : 'mismatch'
       this.emitPaymentEvent({
-        amount: order.amount,
-        method: 'upi',
-        status: upiResponse.status,
-        deliveryId: order.deliveryId,
+        expectedAmount: order.amount,
+        collectedAmount: upiResponse.status === 'success' ? order.amount : 0,
+        paymentMode: 'upi',
+        status: upiStatus,
         transactionId: upiResponse.transactionId,
         timestamp: Date.now()
       })
@@ -702,13 +703,12 @@ export class PaymentModule {
    * @param payload - Event payload
    */
   private emitPaymentEvent(payload: {
-    amount: number
-    method: string
-    status: string
-    deliveryId: string
+    expectedAmount: number
+    collectedAmount: number
+    paymentMode: 'cash' | 'card' | 'upi'
+    status: 'matched' | 'mismatch'
     transactionId: string
     timestamp: number
-    verified?: boolean
   }): void {
     const event: PaymentEvent = {
       id: uuid(),
@@ -716,13 +716,12 @@ export class PaymentModule {
       timestamp: payload.timestamp,
       agentId: 'system',
       payload: {
-        amount: payload.amount,
-        method: payload.method,
-        status: payload.status,
-        deliveryId: payload.deliveryId,
         transactionId: payload.transactionId,
-        timestamp: payload.timestamp,
-        ...(payload.verified !== undefined && { verified: payload.verified })
+        expectedAmount: payload.expectedAmount,
+        collectedAmount: payload.collectedAmount,
+        paymentMode: payload.paymentMode,
+        status: payload.status,
+        timestamp: payload.timestamp
       },
       metadata: {
         syncState: 'PENDING',
@@ -738,11 +737,14 @@ export class PaymentModule {
    * Handle API request (Express/Next.js handler)
    */
   async handleRequest(request: PaymentRequest): Promise<PaymentResponse> {
-    const response = await this.createOrder(request.amount, request.deliveryId, request.method)
+    const status = request.expectedAmount === request.collectedAmount ? 'matched' : 'mismatch'
+    const discrepancy = Math.abs(request.expectedAmount - request.collectedAmount)
+    
     return {
-      id: response.orderId || 'unknown',
-      transactionId: response.orderId || 'unknown',
-      status: response.status === 'created' ? 'success' : 'failed'
+      transactionId: request.transactionId,
+      status,
+      discrepancy,
+      timestamp: request.timestamp
     }
   }
 

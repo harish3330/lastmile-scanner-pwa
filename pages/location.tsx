@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { apiClient } from '../lib/api-client'
+import { postLocation } from '../lib/api-client'
 
 export default function LocationPage() {
   const [latitude, setLatitude] = useState('')
@@ -44,11 +44,12 @@ export default function LocationPage() {
     setMessage('')
 
     try {
-      const response = await apiClient.trackLocation({
+      const response = await postLocation({
         agentId: 'agent-001',
-        lat: parseFloat(latitude),
-        lng: parseFloat(longitude),
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
         accuracy: parseFloat(accuracy),
+        timestamp: Date.now()
       })
 
       setMessage('✅ Location tracked successfully')

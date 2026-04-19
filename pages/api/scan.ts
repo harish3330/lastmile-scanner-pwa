@@ -28,7 +28,7 @@ export default async function handler(
       data: {
         agentId,
         qrCode,
-        decodedData: location ? { lat: location.lat, lng: location.lng } : null,
+        decodedData: location ? JSON.stringify({ lat: location.lat, lng: location.lng }) : null,
       },
     })
 

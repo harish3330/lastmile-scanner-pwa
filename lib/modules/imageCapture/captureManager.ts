@@ -33,7 +33,7 @@ export class ImageCaptureManager {
 
       this.camera = {
         stream,
-        track: track as MediaStreamVideoTrack,
+        track: track as MediaStreamTrack,
         active: true,
       }
 

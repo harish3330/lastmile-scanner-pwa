@@ -41,9 +41,7 @@ export class ScanService {
           agentId: req.agentId,
           qrCode: req.qrCode,
           barcode: req.barcode,
-          latitude: req.location?.lat,
-          longitude: req.location?.lng,
-          timestamp: new Date(req.timestamp)
+          decodedData: req.location ? JSON.stringify(req.location) : null
         }
       })
 
@@ -66,7 +64,7 @@ export class ScanService {
     try {
       const scans = await prisma.scan.findMany({
         where: { agentId },
-        orderBy: { timestamp: 'desc' },
+        orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset
       })
@@ -90,9 +88,9 @@ export class ScanService {
       const scans = await prisma.scan.findMany({
         where: {
           agentId,
-          timestamp: { gte: since }
+          createdAt: { gte: since }
         },
-        orderBy: { timestamp: 'desc' }
+        orderBy: { createdAt: 'desc' }
       })
 
       return scans

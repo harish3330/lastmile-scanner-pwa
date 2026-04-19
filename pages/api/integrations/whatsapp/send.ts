@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { whatsappModule } from '@/lib/modules/integrations'
-import { WhatsAppError } from '@/lib/modules/integrations/types'
 
 interface WhatsAppSendRequest {
   recipient: string
@@ -109,28 +108,19 @@ export default async function handler(
       agentLocation
     )
 
-    if (result.success) {
+    if (result.status === 'sent') {
       return res.status(200).json({
         status: 'sent',
         message: 'WhatsApp message sent successfully',
         messageId: result.messageId,
       })
     } else {
-      return res.status(result.statusCode || 500).json({
+      return res.status(400).json({
         status: 'error',
         message: result.message || 'Failed to send WhatsApp message',
-        code: result.code,
       })
     }
   } catch (error) {
-    if (error instanceof WhatsAppError) {
-      return res.status(error.statusCode).json({
-        status: 'error',
-        message: error.message,
-        code: error.code,
-      })
-    }
-
     console.error('[WhatsApp Send API Error]', error)
     return res.status(500).json({
       status: 'error',

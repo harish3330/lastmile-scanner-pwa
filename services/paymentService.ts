@@ -57,7 +57,7 @@ export class PaymentService {
         transactionId: payment.transactionId,
         status: payment.status as 'matched' | 'mismatch',
         discrepancy: payment.discrepancy,
-        timestamp: payment.timestamp.getTime()
+        timestamp: payment.createdAt.getTime()
       }
     } catch (error) {
       console.error('[PaymentService] Error recording payment:', error)
@@ -72,7 +72,7 @@ export class PaymentService {
     try {
       const payments = await prisma.payment.findMany({
         where: { agentId },
-        orderBy: { timestamp: 'desc' },
+        orderBy: { createdAt: 'desc' },
         take: limit
       })
 
@@ -96,7 +96,7 @@ export class PaymentService {
           status: 'mismatch',
           ...(agentId && { agentId })
         },
-        orderBy: { timestamp: 'desc' }
+        orderBy: { createdAt: 'desc' }
       })
 
       return mismatches
@@ -117,7 +117,7 @@ export class PaymentService {
     try {
       const payments = await prisma.payment.findMany({
         where: {
-          timestamp: {
+          createdAt: {
             gte: dayStart,
             lt: dayEnd
           },

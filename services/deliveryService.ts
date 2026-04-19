@@ -30,7 +30,7 @@ export class DeliveryService {
     try {
       // Check if delivery already exists
       const existing = await prisma.delivery.findUnique({
-        where: { deliveryId: req.deliveryId }
+        where: { id: req.deliveryId }
       })
 
       let delivery
@@ -38,12 +38,10 @@ export class DeliveryService {
       if (existing) {
         // Update existing delivery
         delivery = await prisma.delivery.update({
-          where: { deliveryId: req.deliveryId },
+          where: { id: req.deliveryId },
           data: {
             status: req.status,
-            imageProof: req.imageProof,
-            notes: req.notes,
-            updatedAt: new Date()
+            imageProofId: req.imageProof,
           }
         })
       } else {
@@ -51,10 +49,8 @@ export class DeliveryService {
         delivery = await prisma.delivery.create({
           data: {
             agentId: req.agentId,
-            deliveryId: req.deliveryId,
             status: req.status,
-            imageProof: req.imageProof,
-            notes: req.notes
+            imageProofId: req.imageProof,
           }
         })
       }
@@ -80,7 +76,7 @@ export class DeliveryService {
           agentId,
           ...(status && { status })
         },
-        orderBy: { timestamp: 'desc' }
+        orderBy: { createdAt: 'desc' }
       })
 
       return deliveries
@@ -100,7 +96,7 @@ export class DeliveryService {
       const deliveries = await prisma.delivery.findMany({
         where: {
           agentId,
-          timestamp: { gte: since }
+          createdAt: { gte: since }
         }
       })
 
@@ -124,7 +120,7 @@ export class DeliveryService {
   async getDeliveryWithProof(deliveryId: string) {
     try {
       const delivery = await prisma.delivery.findUnique({
-        where: { deliveryId }
+        where: { id: deliveryId }
       })
 
       return delivery

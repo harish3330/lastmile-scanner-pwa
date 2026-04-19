@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { paymentModule } from '@/lib/modules/integrations'
-import { PaymentError } from '@/lib/modules/integrations/types'
 
 interface VerifyPaymentRequest {
   orderId: string
@@ -98,39 +97,23 @@ export default async function handler(
     // Verify payment
     const result = await paymentModule.verifyPayment(orderId, paymentId, signature, paidAmount)
 
-    if (result.success) {
+    if (result.verified) {
       return res.status(200).json({
         status: 'verified',
         message: 'Payment verified successfully',
-        orderId: result.orderId,
-        paymentId: result.paymentId,
-        amount: result.amount,
-        verifiedAt: result.verifiedAt,
+        orderId,
+        paymentId,
       })
     } else {
       // Determine if it's invalid signature or server error
-      const statusCode = result.code === 'INVALID_SIGNATURE' || result.code === 'AMOUNT_MISMATCH' ? 400 : 500
+      const statusCode = result.status === 'failed' ? 400 : 500
 
       return res.status(statusCode).json({
         status: 'invalid',
         message: result.message || 'Payment verification failed',
-        code: result.code,
       })
     }
   } catch (error) {
-    if (error instanceof PaymentError) {
-      const statusCode = 
-        error.code === 'INVALID_SIGNATURE' || error.code === 'AMOUNT_MISMATCH' 
-          ? 400 
-          : error.statusCode
-
-      return res.status(statusCode).json({
-        status: 'invalid',
-        message: error.message,
-        code: error.code,
-      })
-    }
-
     console.error('[Payment Verify API Error]', error)
     return res.status(500).json({
       status: 'error',

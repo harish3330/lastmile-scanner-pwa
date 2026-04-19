@@ -46,6 +46,30 @@ export interface OTPResponse {
 }
 
 /**
+ * OTP Request Type (for API)
+ */
+export interface OTPRequest {
+  phone: string
+}
+
+/**
+ * Verify OTP Request Type (for API)
+ */
+export interface VerifyOTPRequest {
+  phone: string
+  code: string
+}
+
+/**
+ * Verify OTP Response Type (for API)
+ */
+export interface VerifyOTPResponse {
+  status: 'verified' | 'invalid'
+  message: string
+  token?: string
+}
+
+/**
  * WhatsApp Module Types
  */
 export interface WhatsAppConfig {

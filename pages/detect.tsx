@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { modelManager, type Detection } from '../lib/ml/detector'
-import { apiClient } from '../lib/api-client'
+import { postDetect } from '../lib/api-client'
 
 export default function DetectPage() {
   const [loading, setLoading] = useState(false)
@@ -63,9 +63,10 @@ export default function DetectPage() {
 
         // Send to backend
         try {
-          await apiClient.detect({
-            image: base64,
+          await postDetect({
+            imageBase64: base64,
             confidence: 0.5,
+            agentId: 'agent-default'
           })
         } catch (apiError) {
           console.log('Detection saved locally (offline)')

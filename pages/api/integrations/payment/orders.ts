@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { paymentModule } from '@/lib/modules/integrations'
-import { PaymentError } from '@/lib/modules/integrations/types'
 
 interface CreateOrderRequest {
   amount: number
@@ -111,7 +110,7 @@ export default async function handler(
     // Create order
     const result = await paymentModule.createOrder(amount, deliveryId, method, receipt, currency)
 
-    if (result.success) {
+    if (result.status === 'created') {
       return res.status(200).json({
         status: 'success',
         message: 'Order created successfully',
@@ -120,25 +119,18 @@ export default async function handler(
         currency: result.currency,
       })
     } else {
-      return res.status(result.statusCode || 500).json({
+      return res.status(400).json({
         status: 'error',
         message: result.message || 'Failed to create payment order',
-        code: result.code,
       })
     }
   } catch (error) {
-    if (error instanceof PaymentError) {
-      return res.status(error.statusCode).json({
-        status: 'error',
-        message: error.message,
-        code: error.code,
-      })
-    }
-
     console.error('[Payment Order API Error]', error)
-    return res.status(500).json({
+    const err = error as any
+    return res.status(err.statusCode || 500).json({
       status: 'error',
-      message: 'Internal server error',
+      message: err.message || 'Internal server error',
+      code: err.code,
     })
   }
 }

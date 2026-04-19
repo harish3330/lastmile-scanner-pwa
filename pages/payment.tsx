@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { apiClient } from '../lib/api-client'
+import { postPayment } from '../lib/api-client'
 
 export default function PaymentPage() {
   const [deliveryId, setDeliveryId] = useState('')
@@ -30,14 +30,16 @@ export default function PaymentPage() {
     setMessage('')
 
     try {
-      const response = await apiClient.verifyPayment({
+      const response = await postPayment({
         deliveryId,
         amount: parseFloat(amount),
         method,
+        currency: 'INR',
+        timestamp: Date.now()
       })
 
       setMessage(
-        `✅ Payment verified! Transaction ID: ${response.transactionId}`
+        `✅ Payment processed successfully!`
       )
       setMessageType('success')
       setTransactions([
@@ -45,7 +47,7 @@ export default function PaymentPage() {
           id: deliveryId,
           amount,
           method,
-          transactionId: response.transactionId,
+          transactionId: deliveryId,
           timestamp: new Date().toLocaleTimeString(),
         },
         ...transactions,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { offlineStorage } from '../lib/storage/offline'
-import { apiClient } from '../lib/api-client'
+import { postSync } from '../lib/api-client'
 
 export default function SyncPage() {
   const [stats, setStats] = useState({
@@ -42,7 +42,10 @@ export default function SyncPage() {
       setMessageType('')
 
       // Sync events
-      const response = await apiClient.syncEvents(unsyncedEvents)
+      const response = await postSync({
+        events: unsyncedEvents,
+        agentId: 'agent-001'
+      })
 
       // Mark all as synced
       unsyncedEvents.forEach((event) => {

@@ -13,8 +13,8 @@
 
 import { v4 as uuid } from 'uuid'
 import { eventBus } from '@/lib/events/eventBus'
-import { WhatsAppEvent } from '@/lib/types/events'
-import { WhatsAppRequest, WhatsAppResponse } from '@/lib/types/api'
+import { WhatsappEvent } from '@/lib/types/events'
+import { WhatsappRequest, WhatsappResponse } from '@/lib/types/api'
 import { WhatsAppConfig, WhatsAppMessage, WhatsAppSendResponse, WhatsAppStatusResponse } from './types'
 
 export class WhatsAppModule {
@@ -101,8 +101,8 @@ export class WhatsAppModule {
 
       // Emit WhatsApp event
       this.emitWhatsAppEvent({
-        recipient,
-        message: fullMessage,
+        phoneNumber: recipient,
+        content: fullMessage,
         messageType,
         timestamp: Date.now()
       })
@@ -314,19 +314,21 @@ export class WhatsAppModule {
    * @param payload - Event payload
    */
   private emitWhatsAppEvent(payload: {
-    recipient: string
-    message: string
-    messageType: string
+    phoneNumber: string
+    messageType: 'notification' | 'alert' | 'confirmation'
+    content: string
     timestamp: number
   }): void {
-    const event: WhatsAppEvent = {
+    const event: WhatsappEvent = {
       id: uuid(),
       type: 'WHATSAPP_EVENT',
       timestamp: payload.timestamp,
       agentId: 'system',
       payload: {
-        recipient: payload.recipient,
-        message: payload.message
+        phoneNumber: payload.phoneNumber,
+        messageType: payload.messageType,
+        content: payload.content,
+        timestamp: payload.timestamp
       },
       metadata: {
         syncState: 'PENDING',
@@ -341,11 +343,12 @@ export class WhatsAppModule {
   /**
    * Handle API request (Express/Next.js handler)
    */
-  async handleRequest(request: WhatsAppRequest): Promise<WhatsAppResponse> {
-    const response = await this.sendMessage(request.recipient, request.message)
+  async handleRequest(request: WhatsappRequest): Promise<WhatsappResponse> {
+    const messageType = request.messageType as 'notification' | 'alert' | 'confirmation'
+    const response = await this.sendMessage(request.phoneNumber, request.content, messageType)
     return {
-      status: response.status === 'sent' ? 'sent' : 'error',
-      messageId: response.messageId || 'unknown'
+      messageId: response.messageId || 'unknown',
+      status: response.status === 'sent' ? 'sent' : 'failed'
     }
   }
 

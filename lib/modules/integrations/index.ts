@@ -10,37 +10,9 @@ export { OTPModule, otpModule } from './otp'
 export { WhatsAppModule, whatsappModule } from './whatsapp'
 export { PaymentModule, paymentModule } from './payment'
 
-// Re-export all types
-export type {
-  // OTP Types
-  OTPConfig,
-  OTPGenerationResponse,
-  OTPVerificationResponse,
-  OTPStorage,
-  OTPResponse,
-  // WhatsApp Types
-  WhatsAppConfig,
-  WhatsAppMessage,
-  WhatsAppSendResponse,
-  WhatsAppStatusResponse,
-  WhatsAppStorage,
-  // Payment Types
-  PaymentConfig,
-  PaymentOrder,
-  PaymentOrderResponse,
-  PaymentVerificationResponse,
-  PaymentRefundResponse,
-  PaymentStatus,
-  PaymentHistory,
-  PaymentAuditLog,
-  // UPI Payment Types
-  UPIConfig,
-  UPIPaymentRequest,
-  UPIPaymentResponse
-}
-
-// Re-export error classes
-export { IntegrationError, OTPErrorClass, WhatsAppErrorClass, PaymentErrorClass }
+// Re-export all types and error classes from types file
+export type * from './types'
+export { IntegrationError, OTPErrorClass, WhatsAppErrorClass, PaymentErrorClass } from './types'
 
 /**
  * Singleton instances - Use these to access the modules

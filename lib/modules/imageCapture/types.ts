@@ -18,6 +18,6 @@ export interface CaptureOptions {
 
 export interface DeviceCamera {
   stream: MediaStream
-  track: MediaStreamVideoTrack
+  track: MediaStreamTrack
   active: boolean
 }

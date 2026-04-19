@@ -34,7 +34,6 @@ export class LocationService {
           latitude: req.latitude,
           longitude: req.longitude,
           accuracy: req.accuracy || 0,
-          timestamp: req.timestamp ? new Date(req.timestamp) : new Date()
         }
       })
 
@@ -51,7 +50,7 @@ export class LocationService {
       return {
         status: 'logged',
         locationId: location.id,
-        timestamp: location.timestamp.getTime()
+        timestamp: location.createdAt.getTime()
       }
     } catch (error) {
       console.error('[LocationService] Error recording location:', error)
@@ -70,9 +69,9 @@ export class LocationService {
       const locations = await prisma.location.findMany({
         where: {
           agentId,
-          timestamp: { gte: since }
+          createdAt: { gte: since }
         },
-        orderBy: { timestamp: 'desc' },
+        orderBy: { createdAt: 'desc' },
         take: limit
       })
 
@@ -95,7 +94,7 @@ export class LocationService {
     try {
       const location = await prisma.location.findFirst({
         where: { agentId },
-        orderBy: { timestamp: 'desc' }
+        orderBy: { createdAt: 'desc' }
       })
 
       return location

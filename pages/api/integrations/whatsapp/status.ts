@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { whatsappModule } from '@/lib/modules/integrations'
-import { WhatsAppError } from '@/lib/modules/integrations/types'
 
 interface WhatsAppStatusResponse {
   status: 'success' | 'error'
@@ -58,32 +57,20 @@ export default async function handler(
     // Get message status
     const result = await whatsappModule.getMessageStatus(messageId)
 
-    if (result.success) {
+    if (result && result.messageId) {
       return res.status(200).json({
         status: 'success',
         messageId: result.messageId,
         deliveryStatus: result.deliveryStatus,
-        readStatus: result.readStatus,
-        sentAt: result.sentAt,
-        deliveredAt: result.deliveredAt,
-        readAt: result.readAt,
+        readStatus: result.readStatus === 'read',
       })
     } else {
-      return res.status(result.statusCode || 500).json({
+      return res.status(404).json({
         status: 'error',
-        message: result.message || 'Failed to get message status',
-        code: result.code,
+        message: 'Message not found',
       })
     }
   } catch (error) {
-    if (error instanceof WhatsAppError) {
-      return res.status(error.statusCode).json({
-        status: 'error',
-        message: error.message,
-        code: error.code,
-      })
-    }
-
     console.error('[WhatsApp Status API Error]', error)
     return res.status(500).json({
       status: 'error',

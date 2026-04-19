@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { paymentModule } from '@/lib/modules/integrations'
-import { PaymentError } from '@/lib/modules/integrations/types'
 
 interface RefundRequest {
   orderId: string
@@ -90,35 +89,20 @@ export default async function handler(
     // Process refund
     const result = await paymentModule.processRefund(orderId, refundAmount)
 
-    if (result.success) {
+    if (result.status === 'success') {
       return res.status(200).json({
         status: 'success',
         message: 'Refund processed successfully',
-        orderId: result.orderId,
         refundId: result.refundId,
         refundAmount: result.refundAmount,
-        refundedAt: result.refundedAt,
       })
     } else {
-      const statusCode = result.code === 'ORDER_NOT_FOUND' ? 404 : result.statusCode || 500
-
-      return res.status(statusCode).json({
+      return res.status(400).json({
         status: 'error',
         message: result.message || 'Failed to process refund',
-        code: result.code,
       })
     }
   } catch (error) {
-    if (error instanceof PaymentError) {
-      const statusCode = error.code === 'ORDER_NOT_FOUND' ? 404 : error.statusCode
-
-      return res.status(statusCode).json({
-        status: 'error',
-        message: error.message,
-        code: error.code,
-      })
-    }
-
     console.error('[Payment Refund API Error]', error)
     return res.status(500).json({
       status: 'error',

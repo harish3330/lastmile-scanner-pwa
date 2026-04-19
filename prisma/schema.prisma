@@ -27,6 +27,8 @@ model Agent {
   deliveries    Delivery[]
   payments      Payment[]
   detections    Detection[]
+  geofenceAlerts GeofenceAlert[]
+  imageCaptures ImageCapture[]
 }
 
 // ISSUE #4 - Scans
@@ -35,7 +37,7 @@ model Scan {
   agentId   String
   qrCode    String
   barcode   String?
-  decodedData Json?
+  decodedData String?
   createdAt DateTime  @default(now())
 
   agent     Agent     @relation(fields: [agentId], references: [id])
@@ -100,7 +102,7 @@ model Detection {
   parcelCount   Int
   confidence    Float
   imageHash     String    @unique
-  detections    Json      // Array of Parcel objects
+  detections    String    // Array of Parcel objects
   inferenceTime Int       // milliseconds
   createdAt     DateTime  @default(now())
 
@@ -161,7 +163,7 @@ model SyncQueue {
   id            String    @id @default(cuid())
   agentId       String
   eventType     String
-  eventData     Json
+  eventData     String
   syncState     String    @default("PENDING") // "PENDING" | "SYNCED" | "FAILED"
   attempt       Int       @default(0)
   error         String?

@@ -29,7 +29,7 @@ export default async function handler(
     const status = discrepancy === 0 ? 'matched' : 'mismatch'
 
     // Store transaction in database
-    const transaction = await prisma.cashTransaction.create({
+    const transaction = await prisma.payment.create({
       data: {
         transactionId,
         agentId,

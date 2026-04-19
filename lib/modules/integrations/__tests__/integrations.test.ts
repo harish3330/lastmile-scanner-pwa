@@ -34,7 +34,7 @@ describe('OTPModule', () => {
 
   describe('OTP Generation', () => {
     it('should generate and send OTP for valid phone number', async () => {
-      const phoneNumber = '+919876543210'
+      const phoneNumber = '+919080747974'
       
       const response = await otpModule.generateOTP(phoneNumber)
       
@@ -53,7 +53,7 @@ describe('OTPModule', () => {
     })
 
     it('should emit OTP_EVENT when OTP is generated', async () => {
-      const phoneNumber = '+919876543210'
+      const phoneNumber = '+919080747974'
       const emitSpy = jest.spyOn(eventBus, 'emit')
       
       await otpModule.generateOTP(phoneNumber)
@@ -69,7 +69,7 @@ describe('OTPModule', () => {
     })
 
     it('should store OTP internally for verification', async () => {
-      const phoneNumber = '+919876543210'
+      const phoneNumber = '+919080747974'
       
       const response = await otpModule.generateOTP(phoneNumber)
       const otpCode = response.otp // Should be returned from generator
@@ -81,7 +81,7 @@ describe('OTPModule', () => {
 
   describe('OTP Verification', () => {
     it('should verify correct OTP code', async () => {
-      const phoneNumber = '+919876543210'
+      const phoneNumber = '+919080747974'
       
       // First generate OTP
       const generateResponse = await otpModule.generateOTP(phoneNumber)
@@ -95,7 +95,7 @@ describe('OTPModule', () => {
     })
 
     it('should reject incorrect OTP code', async () => {
-      const phoneNumber = '+919876543210'
+      const phoneNumber = '+919080747974'
       
       await otpModule.generateOTP(phoneNumber)
       
@@ -106,7 +106,7 @@ describe('OTPModule', () => {
     })
 
     it('should emit OTP_EVENT when verification is complete', async () => {
-      const phoneNumber = '+919876543210'
+      const phoneNumber = '+919080747974'
       const emitSpy = jest.spyOn(eventBus, 'emit')
       
       const generateResponse = await otpModule.generateOTP(phoneNumber)
@@ -126,7 +126,7 @@ describe('OTPModule', () => {
     })
 
     it('should reject expired OTP', async () => {
-      const phoneNumber = '+919876543210'
+      const phoneNumber = '+919080747974'
       
       const generateResponse = await otpModule.generateOTP(phoneNumber)
       
@@ -142,7 +142,7 @@ describe('OTPModule', () => {
 
   describe('OTP Error Handling', () => {
     it('should handle network errors during OTP generation', async () => {
-      const phoneNumber = '+919876543210'
+      const phoneNumber = '+919080747974'
       jest.spyOn(otpModule as any, 'sendViaMsg91').mockRejectedValueOnce(new Error('Network error'))
       
       const response = await otpModule.generateOTP(phoneNumber)

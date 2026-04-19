@@ -55,6 +55,8 @@ export default async function handler(
         parcelCount: detections.parcelCount,
         confidence: detections.confidence,
         imageHash,
+        detections: JSON.stringify(detections.detections),
+        inferenceTime: 100, // Placeholder inference time in milliseconds
       },
     })
 

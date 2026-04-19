@@ -15,8 +15,7 @@
 import { v4 as uuid } from 'uuid'
 import { eventBus } from '@/lib/events/eventBus'
 import { OTPEvent } from '@/lib/types/events'
-import { OTPRequest, OTPResponse, VerifyOTPRequest, VerifyOTPResponse } from '@/lib/types/api'
-import { OTPConfig, OTPGenerationResponse, OTPVerificationResponse, OTPStorage, OTPError } from './types'
+import { OTPConfig, OTPGenerationResponse, OTPVerificationResponse, OTPStorage, OTPResponse, OTPRequest, VerifyOTPRequest, VerifyOTPResponse } from './types'
 
 export class OTPModule {
   private config: OTPConfig
@@ -315,8 +314,8 @@ export class OTPModule {
       timestamp: payload.timestamp,
       agentId: 'system', // Will be set by actual caller
       payload: {
-        phone: payload.phone,
-        code: payload.code,
+        phoneNumber: payload.phone,
+        otpCode: payload.code,
         verified: payload.verified,
         timestamp: payload.timestamp
       },

@@ -47,36 +47,52 @@ export class SyncService {
 
     for (const event of events) {
       try {
-        // Update sync queue status
-        await prisma.syncQueue.update({
-          where: { eventId: event.id },
-          data: {
-            status: 'SYNCED',
-            syncedAt: new Date()
+        // Find and update sync queue record for this event
+        const queueRecord = await prisma.syncQueue.findFirst({
+          where: { 
+            eventType: event.type,
+            syncState: 'PENDING'
           }
         })
 
+        if (queueRecord) {
+          await prisma.syncQueue.update({
+            where: { id: queueRecord.id },
+            data: {
+              syncState: 'SYNCED',
+              syncedAt: new Date()
+            }
+          })
+        }
+
         synced++
       } catch (error) {
-        console.error(`[SyncService] Failed to sync event ${event.id}:`, error)
+        console.error(`[SyncService] Failed to sync event ${event.type}:`, error)
         failed++
         errors.push({
-          eventId: event.id,
+          eventId: event.id || 'unknown',
           error: (error as Error).message
         })
 
         // Update attempts in sync queue
         try {
-          await prisma.syncQueue.update({
-            where: { eventId: event.id },
-            data: {
-              status: 'FAILED',
-              attempt: {
-                increment: 1
-              },
-              error: (error as Error).message
+          const queueRecord = await prisma.syncQueue.findFirst({
+            where: { 
+              eventType: event.type,
+              syncState: 'PENDING'
             }
           })
+
+          if (queueRecord) {
+            await prisma.syncQueue.update({
+              where: { id: queueRecord.id },
+              data: {
+                syncState: 'FAILED',
+                attempt: queueRecord.attempt + 1,
+                error: (error as Error).message
+              }
+            })
+          }
         } catch (e) {
           // Ignore error during update
         }
@@ -96,7 +112,7 @@ export class SyncService {
     try {
       const events = await prisma.syncQueue.findMany({
         where: {
-          status: 'PENDING',
+          syncState: 'PENDING',
           ...(agentId && { agentId })
         },
         orderBy: { createdAt: 'asc' },
@@ -117,7 +133,7 @@ export class SyncService {
     try {
       const events = await prisma.syncQueue.findMany({
         where: {
-          status: 'FAILED',
+          syncState: 'FAILED',
           attempt: { lt: maxAttempts }
         },
         orderBy: { createdAt: 'asc' }
@@ -147,7 +163,7 @@ export class SyncService {
       agentId: e.agentId,
       eventData: e.eventData,
       metadata: {
-        syncState: e.status as 'PENDING' | 'SYNCED' | 'FAILED',
+        syncState: e.syncState as 'PENDING' | 'SYNCED' | 'FAILED',
         attempt: e.attempt
       }
     }))
@@ -167,21 +183,21 @@ export class SyncService {
 
       const synced = await prisma.syncQueue.count({
         where: {
-          status: 'SYNCED',
+          syncState: 'SYNCED',
           ...(agentId && { agentId })
         }
       })
 
       const pending = await prisma.syncQueue.count({
         where: {
-          status: 'PENDING',
+          syncState: 'PENDING',
           ...(agentId && { agentId })
         }
       })
 
       const failed = await prisma.syncQueue.count({
         where: {
-          status: 'FAILED',
+          syncState: 'FAILED',
           ...(agentId && { agentId })
         }
       })
