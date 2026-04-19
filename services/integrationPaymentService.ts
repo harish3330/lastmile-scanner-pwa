@@ -323,9 +323,35 @@ export class IntegrationPaymentService {
   /**
    * Emit payment event to event bus
    */
-  private emitPaymentEvent(data: PaymentEvent) {
+  private emitPaymentEvent(payload: {
+    expectedAmount: number
+    collectedAmount: number
+    paymentMode: 'cash' | 'card' | 'upi'
+    status: 'matched' | 'mismatch'
+    transactionId: string
+    timestamp: number
+  }): void {
     try {
-      eventBus.publish('PAYMENT_EVENT', data)
+      const { v4: uuid } = require('uuid')
+      const event: PaymentEvent = {
+        id: uuid(),
+        type: 'PAYMENT_EVENT',
+        timestamp: payload.timestamp,
+        agentId: 'system',
+        payload: {
+          transactionId: payload.transactionId,
+          expectedAmount: payload.expectedAmount,
+          collectedAmount: payload.collectedAmount,
+          paymentMode: payload.paymentMode,
+          status: payload.status,
+          timestamp: payload.timestamp
+        },
+        metadata: {
+          syncState: 'PENDING',
+          attempt: 0
+        }
+      }
+      eventBus.emit(event)
     } catch (error) {
       console.warn('[IntegrationPaymentService] Failed to emit PAYMENT_EVENT:', error)
     }

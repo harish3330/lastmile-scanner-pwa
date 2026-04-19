@@ -49,7 +49,7 @@ export class OTPService {
       const result = await otpModule.generateOTP(phoneNumber)
 
       if (result.status === 'sent') {
-        // Publish OTP_EVENT
+      // Publish OTP_EVENT
         this.emitOTPEvent({
           phone: phoneNumber,
           code: result.otp || 'MASKED',
@@ -109,7 +109,7 @@ export class OTPService {
       const result = await otpModule.verifyOTP(phoneNumber, otpCode)
 
       if (result.verified) {
-        // Publish OTP_EVENT with verification status
+          // Publish OTP_EVENT with verification status
         this.emitOTPEvent({
           phone: phoneNumber,
           code: otpCode,
@@ -140,9 +140,26 @@ export class OTPService {
   /**
    * Emit OTP event to event bus
    */
-  private emitOTPEvent(data: OTPEvent) {
+  private emitOTPEvent(payload: { phone: string; code: string; verified: boolean; timestamp: number }): void {
     try {
-      eventBus.publish('OTP_EVENT', data)
+      const { v4: uuid } = require('uuid')
+      const event: OTPEvent = {
+        id: uuid(),
+        type: 'OTP_EVENT',
+        timestamp: payload.timestamp,
+        agentId: 'system',
+        payload: {
+          phoneNumber: payload.phone,
+          otpCode: payload.code,
+          verified: payload.verified,
+          timestamp: payload.timestamp
+        },
+        metadata: {
+          syncState: 'PENDING',
+          attempt: 0
+        }
+      }
+      eventBus.emit(event)
     } catch (error) {
       console.warn('[OTPService] Failed to emit OTP_EVENT:', error)
     }

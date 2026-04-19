@@ -111,10 +111,9 @@ export class WhatsAppService {
       if (result.status === 'sent' || result.status !== 'failed') {
         // Publish WHATSAPP_EVENT
         this.emitWhatsAppEvent({
-          recipient,
-          message,
+          phoneNumber: recipient,
           messageType,
-          sentAt: Date.now(),
+          content: message,
           timestamp: Date.now()
         })
 
@@ -159,10 +158,7 @@ export class WhatsAppService {
           status: 'success',
           messageId: result.messageId,
           deliveryStatus: result.deliveryStatus || 'UNKNOWN',
-          readStatus: result.readStatus === 'read',
-          sentAt: result.sentAt,
-          deliveredAt: result.deliveredAt,
-          readAt: result.readAt
+          readStatus: result.readStatus === 'read'
         }
       } else {
         return {
@@ -182,9 +178,31 @@ export class WhatsAppService {
   /**
    * Emit WhatsApp event to event bus
    */
-  private emitWhatsAppEvent(data: WhatsappEvent) {
+  private emitWhatsAppEvent(payload: {
+    phoneNumber: string
+    messageType: 'notification' | 'alert' | 'confirmation'
+    content: string
+    timestamp: number
+  }): void {
     try {
-      eventBus.publish('WHATSAPP_EVENT', data)
+      const { v4: uuid } = require('uuid')
+      const event: WhatsappEvent = {
+        id: uuid(),
+        type: 'WHATSAPP_EVENT',
+        timestamp: payload.timestamp,
+        agentId: 'system',
+        payload: {
+          phoneNumber: payload.phoneNumber,
+          messageType: payload.messageType,
+          content: payload.content,
+          timestamp: payload.timestamp
+        },
+        metadata: {
+          syncState: 'PENDING',
+          attempt: 0
+        }
+      }
+      eventBus.emit(event)
     } catch (error) {
       console.warn('[WhatsAppService] Failed to emit WHATSAPP_EVENT:', error)
     }

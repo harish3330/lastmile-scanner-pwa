@@ -106,7 +106,7 @@ export default async function handler(
       })
     } else {
       // Determine if it's invalid signature or server error
-      const statusCode = result.status === 'failed' ? 400 : 500
+      const statusCode = result.status === 'invalid' ? 400 : 500
 
       return res.status(statusCode).json({
         status: 'invalid',
