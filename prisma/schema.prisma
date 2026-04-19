@@ -1,0 +1,125 @@
+// This is ISSUE #8 (Backend APIs) - Database Schema
+// Owner: srinithi11125
+//
+// This schema defines all database entities for:
+// - Scan records
+// - Location tracking
+// - Delivery tracking
+// - Payment/Cash management
+// - Sync queue for offline events
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Agent model - who is making the scans/deliveries
+model Agent {
+  id            String   @id @default(cuid())
+  name          String
+  phoneNumber   String   @unique
+  status        String   @default("active") // "active" | "offline" | "inactive"
+  lastLatitude  Float?
+  lastLongitude Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  scans      Scan[]
+  locations  Location[]
+  deliveries Delivery[]
+  payments   Payment[]
+  syncQueue  SyncQueue[]
+
+  @@index([status])
+}
+
+// ISSUE #4 (Scanner) creates SCAN_EVENTs → we store them
+model Scan {
+  id           String   @id @default(cuid())
+  agentId      String
+  qrCode       String
+  barcode      String?
+  decodedData  Json? // Can store any decoded QR data
+  latitude     Float?
+  longitude    Float?
+  timestamp    DateTime @default(now())
+
+  agent Agent @relation(fields: [agentId], references: [id])
+
+  @@index([agentId])
+  @@index([timestamp])
+}
+
+// ISSUE #6 (GPS Tracker) creates LOCATION_EVENTs → we store them
+model Location {
+  id        String   @id @default(cuid())
+  agentId   String
+  latitude  Float
+  longitude Float
+  accuracy  Float? // GPS accuracy in meters
+  timestamp DateTime @default(now())
+
+  agent Agent @relation(fields: [agentId], references: [id])
+
+  @@index([agentId, timestamp])
+}
+
+// ISSUE #2 (Frontend) sends DELIVERY_EVENTs → we process them
+model Delivery {
+  id           String   @id @default(cuid())
+  agentId      String
+  deliveryId   String   @unique // External delivery ID
+  status       String // "started" | "in_progress" | "completed" | "failed"
+  imageProof   String? // Base64 or URL
+  notes        String?
+  timestamp    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  agent Agent @relation(fields: [agentId], references: [id])
+
+  @@index([agentId, status])
+  @@index([deliveryId])
+}
+
+// ISSUE #8 (We own this) - Cash Collection & Payment Tracking
+model Payment {
+  id              String   @id @default(cuid())
+  agentId         String
+  transactionId   String   @unique
+  expectedAmount  Float
+  collectedAmount Float
+  paymentMode     String // "cash" | "card" | "upi"
+  status          String // "matched" | "mismatch"
+  discrepancy     Float    @default(0) // collectedAmount - expectedAmount
+  notes           String?
+  timestamp       DateTime @default(now())
+
+  agent Agent @relation(fields: [agentId], references: [id])
+
+  @@index([agentId, status])
+  @@index([timestamp])
+}
+
+// ISSUE #3 (Sync Manager) uses this to track sync status
+model SyncQueue {
+  id        String   @id @default(cuid())
+  agentId   String
+  eventId   String   @unique // From eventBus
+  eventType String // SCAN_EVENT, LOCATION_EVENT, etc.
+  eventData Json // Full event payload
+  status    String   @default("PENDING") // "PENDING" | "SYNCED" | "FAILED"
+  attempt   Int      @default(0)
+  error     String?
+  createdAt DateTime @default(now())
+  syncedAt  DateTime?
+
+  agent Agent @relation(fields: [agentId], references: [id])
+
+  @@index([status, agentId])
+  @@index([agentId, createdAt])
+}
